@@ -143,6 +143,11 @@ def main():
                 runtime_env = dict(env, SERVER_PORT=str(port))
                 if name != 'api-gateway':
                     runtime_env.pop('FRONTEND_ORIGIN', None)
+                runtime_env.pop('ENCRYPT_KEY', None)
+                runtime_env.pop('CONFIG_ADMIN_USER', None)
+                runtime_env.pop('CONFIG_ADMIN_PASSWORD', None)
+                if name == 'config-server':
+                    runtime_env['ENCRYPT_KEY'] = secrets.token_urlsafe(48)
                 process = subprocess.Popen([java, '-Xms64m', '-Xmx256m', '-jar', str(jar)], cwd=ROOT,
                                            env=runtime_env, stdout=log, stderr=subprocess.STDOUT)
                 processes.append((name, process))

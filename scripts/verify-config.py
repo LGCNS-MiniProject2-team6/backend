@@ -42,12 +42,15 @@ def expect_unauthorized(url, username=None, password=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--verify-encryption', action='store_true', help='임시 Git에서 암복호화·권한·서비스 수신·Gateway 차단 검증')
     parser.add_argument('--git-uri', help='HTTPS 원격 또는 file URI. 생략하면 기존 임시 Git 검증')
     parser.add_argument('--git-label', default='main', help='main, slash 없는 tag 또는 commit SHA')
     parser.add_argument('--expected-commit', help='검증할 설정 Git commit SHA')
     parser.add_argument('--expected-version', default='v1', help='외부 저장소의 info.config.version')
     parser.add_argument('--profile', choices=['local', 'dev', 'prod'], default='local')
     args = parser.parse_args()
+    if args.verify_encryption and args.git_uri:
+        parser.error("암호화 검증은 원본 저장소를 수정하지 않도록 임시 Git에서만 실행합니다.")
     if not re.fullmatch(r'[A-Za-z0-9_.-]+', args.git_label):
         parser.error('--git-label은 main, slash 없는 tag 또는 commit SHA를 사용하세요.')
     if args.git_uri:
@@ -62,6 +65,9 @@ def main():
     jars = [ROOT / f'platform/{name}/build/libs/{name}.jar' for name in names[:2]] + [
         ROOT / f'services/{name}/build/libs/{name}.jar' for name in services
     ]
+    if args.verify_encryption:
+        names.append('api-gateway')
+        jars.append(ROOT / 'platform/api-gateway/build/libs/api-gateway.jar')
     for jar in jars:
         if not jar.is_file():
             raise RuntimeError(f'먼저 JAR 빌드 필요: {jar}')
@@ -106,6 +112,9 @@ def main():
             ports = [sock.getsockname()[1] for sock in sockets]
             config_url = f'http://127.0.0.1:{ports[1]}'
             username, password = 'config-test', secrets.token_urlsafe(32)
+            encrypt_key = secrets.token_urlsafe(48)
+            admin, admin_password = 'config-admin-test', secrets.token_urlsafe(32)
+            crypto_plain = 'verification-only-' + secrets.token_hex(8)
             base_env = dict(os.environ, CONFIG_USER=username, CONFIG_PASSWORD=password,
                             CONFIG_GIT_URI=git_uri, CONFIG_GIT_LABEL=label,
                             CONFIG_GIT_USERNAME=git_username, CONFIG_GIT_TOKEN=git_token,
@@ -117,12 +126,54 @@ def main():
                 log = (logs_dir / f'{name}.log').open('w')
                 logs.append(log)
                 env = dict(base_env, SERVER_PORT=str(port))
+                env.pop('ENCRYPT_KEY', None)
+                env.pop('CONFIG_ADMIN_USER', None)
+                env.pop('CONFIG_ADMIN_PASSWORD', None)
+                if name == 'config-server':
+                    env['ENCRYPT_KEY'] = encrypt_key
+                    if args.verify_encryption:
+                        env['CONFIG_ADMIN_USER'] = admin
+                        env['CONFIG_ADMIN_PASSWORD'] = admin_password
                 process = subprocess.Popen([java, '-Xms64m', '-Xmx256m', '-jar', str(jar)],
                                            cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
                 processes.append((name, process))
                 if i < 2:
                     msa.wait_until(lambda p=port: request_json(f'http://127.0.0.1:{p}/actuator/health')['status'] == 'UP',
                                    processes, 60, f'{name} health')
+                if i == 1 and args.verify_encryption:
+                    def crypto_request(path, body, user=None, secret=None, method='POST', base=config_url):
+                        headers = {'Content-Type': 'text/plain'}
+                        if user is not None:
+                            token = base64.b64encode(f'{user}:{secret}'.encode()).decode()
+                            headers['Authorization'] = 'Basic ' + token
+                        req = urllib.request.Request(base + path, data=body.encode() if method == 'POST' else None,
+                                                     headers=headers, method=method)
+                        try:
+                            with msa.HTTP.open(req, timeout=5) as response:
+                                return response.status, response.read().decode()
+                        except urllib.error.HTTPError as error:
+                            return error.code, error.read().decode()
+                    for path in ['/encrypt', '/decrypt']:
+                        assert crypto_request(path, crypto_plain)[0] == 401
+                        assert crypto_request(path, crypto_plain, username, password)[0] == 403
+                        assert crypto_request(path, crypto_plain, admin, 'wrong-password')[0] == 401
+                        assert crypto_request(path, '', admin, admin_password, method='GET')[0] == 403
+                    status, ciphertext = crypto_request('/encrypt', crypto_plain, admin, admin_password)
+                    assert status == 200 and ciphertext and ciphertext != crypto_plain
+                    assert crypto_request('/decrypt', ciphertext, admin, admin_password) == (200, crypto_plain)
+                    common = repo / 'application.yml'
+                    data = common.read_text().replace(f'version: {marker}',
+                         f'version: {marker}\n    encrypted-marker: ${{crypto-demo.secret}}')
+                    data += f"\ncrypto-demo:\n  secret: '{{cipher}}{ciphertext}'\n"
+                    common.write_text(data)
+                    subprocess.run(['git', '-C', str(repo), 'add', 'application.yml'], check=True, capture_output=True)
+                    subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Config Verification',
+                                    '-c', 'user.email=config-test@example.invalid', '-c', 'commit.gpgsign=false',
+                                    '-c', 'core.hooksPath=/dev/null', 'commit', '-m', 'test: encrypted marker'],
+                                   check=True, capture_output=True)
+                    commit = subprocess.check_output(['git', '-C', str(repo), 'rev-parse', 'HEAD'], text=True).strip()
+                    assert crypto_plain not in common.read_text(), '평문이 Git fixture에 저장됨'
+                    print('PASS Crypto: 관리자 암복호화, 무인증 401/읽기 계정 403, Git 암호문 저장', flush=True)
                 if i == 1:
                     expect_unauthorized(f'{config_url}/auth-service/local/{label}')
                     expect_unauthorized(f'{config_url}/auth-service/local/{label}', username, 'wrong-password')
@@ -139,6 +190,8 @@ def main():
                             assert effective['info.config.profile'] == profile
                             assert effective['info.config.service'] == service
                             assert effective['info.config.version'] == marker
+                            if args.verify_encryption:
+                                assert effective['crypto-demo.secret'] == crypto_plain
                     print('PASS Config: 4개 서비스 x local/dev/prod 설정 및 Git commit 일치', flush=True)
             for name, port in zip(names, ports):
                 for path in ['health', 'health/liveness', 'health/readiness']:
@@ -146,7 +199,10 @@ def main():
                                    processes, 60, f'{name} {path}')
                 if name in services:
                     actual = request_json(f'http://127.0.0.1:{port}/actuator/info')['config']
-                    assert actual == {'source': 'recu-config', 'version': marker, 'profile': args.profile, 'service': name}, actual
+                    expected = {'source': 'recu-config', 'version': marker, 'profile': args.profile, 'service': name}
+                    if args.verify_encryption:
+                        expected['encrypted-marker'] = crypto_plain
+                    assert actual == expected, '중앙 설정 수신 불일치'
                 print(f'PASS {name}: Health/Probe 및 중앙 설정 수신', flush=True)
 
             def all_registered():
@@ -163,6 +219,13 @@ def main():
 
             msa.wait_until(all_registered, processes, 90, 'Config + 4개 서비스 Eureka 등록')
             print('PASS Eureka: Config Server + 도메인 4개 UP 및 포트 일치', flush=True)
+            if args.verify_encryption:
+                gateway_url = f'http://127.0.0.1:{ports[-1]}'
+                for path in ['/encrypt', '/decrypt']:
+                    for method in ['POST', 'GET']:
+                        assert crypto_request(path, crypto_plain, admin, admin_password,
+                                              method=method, base=gateway_url)[0] == 404
+                print('PASS Crypto: 네 서비스 복호화 수신, 키 미주입, Gateway 암복호화 경로 404', flush=True)
             # 잘못된 Config 인증이면 로컬 기본값만으로 기동되지 않아야 한다.
             log = (logs_dir / 'fail-fast.log').open('w')
             logs.append(log)
