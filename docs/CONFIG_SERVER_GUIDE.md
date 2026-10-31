@@ -1,5 +1,7 @@
 # Config Server 실행·설정 저장소 인계
 
+후속 #15의 Kafka Bus 실행·무재시작 갱신 검증은 [Spring Cloud Bus 안내](SPRING_CLOUD_BUS_GUIDE.md)를 참고한다. Kafka가 없으면 BUS_ENABLED=false 기본값을 사용한다.
+
 Gateway를 포함한 후속 실행·라우팅·CORS는 [Gateway 안내](GATEWAY_GUIDE.md)를 참고한다.
 
 **원격 저장소 연결:** 별도 Private 저장소가 생성됐다. 현재 연결·검증 절차는 [원격 Config 안내](REMOTE_CONFIG_GUIDE.md)를 우선 참고한다. 아래 로컬 Git 절차는 계정 없이 검증하는 대안으로 유지한다.

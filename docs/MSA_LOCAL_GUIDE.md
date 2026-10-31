@@ -1,5 +1,7 @@
 # MSA 서비스 골격 실행 및 백엔드 인계 (이슈 #3 기준)
 
+후속 #15의 Kafka Bus 실행·무재시작 갱신 검증은 [Spring Cloud Bus 안내](SPRING_CLOUD_BUS_GUIDE.md)를 참고한다. Kafka가 없으면 BUS_ENABLED=false 기본값을 사용한다.
+
 Gateway를 포함한 후속 실행·라우팅·CORS는 [Gateway 안내](GATEWAY_GUIDE.md)를 참고한다.
 
 **현재 실행 순서 변경:** 이슈 #7부터 네 서비스의 기본 실행에는 Config Server가 필요하다. 먼저 [Config Server 실행 안내](CONFIG_SERVER_GUIDE.md)에 따라 Eureka → Config → 네 서비스를 실행한다. 아래 내용은 이슈 #3의 골격 구조와 Config를 명시적으로 끈 진단 실행을 설명한다.

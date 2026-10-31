@@ -17,3 +17,9 @@
 운영 설정 원천은 별도 https://github.com/LGCNS-MiniProject2-team6/recu-config 저장소다. 이 템플릿은 초기 예제와 임시 Git 회귀 검증 fixture로 유지하며 자동 동기화되지 않는다. 원격 연결은 docs/REMOTE_CONFIG_GUIDE.md를 참고한다.
 
 api-gateway.yml과 api-gateway-{local,dev,prod}.yml은 Gateway의 라우팅/CORS 검증 fixture다. dev/prod는 FRONTEND_ORIGIN을 명시해야 하며 자세한 내용은 docs/GATEWAY_GUIDE.md를 참고한다.
+
+## Kafka Bus (#15)
+
+공통 application.yml의 demo.config-version은 비밀이 아닌 갱신 확인 값이다. 환경별 application-{profile}.yml에는 local/dev/prod별 Bus 토픽 기본값을 둔다. 여섯 앱의 BUS_DESTINATION 환경변수는 반드시 동일 환경으로 맞추며 Config Server에도 주입한다. 공유 consumer group은 지정하지 않는다.
+
+Git push만으로 갱신되지 않으며 관리자 POST /actuator/busrefresh 한 번이 필요하다. 부팅·인증정보는 환경변수/Secret으로 유지한다. docs/SPRING_CLOUD_BUS_GUIDE.md 참고.

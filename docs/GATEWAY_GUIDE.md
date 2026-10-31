@@ -1,5 +1,7 @@
 # API Gateway 실행 및 검증
 
+후속 #15의 Kafka Bus 실행·무재시작 갱신 검증은 [Spring Cloud Bus 안내](SPRING_CLOUD_BUS_GUIDE.md)를 참고한다. Kafka가 없으면 BUS_ENABLED=false 기본값을 사용한다.
+
 관련 이슈: #11. Gateway는 **프론트의 단일 API 진입점**이며, URL 경로를 보고 담당 서비스로 요청을 전달한다.
 
 ```text
