@@ -25,14 +25,18 @@ class DiscoveryServerApplicationTest {
 
     var headers = new HttpHeaders();
     headers.setAccept(java.util.List.of(MediaType.APPLICATION_JSON));
-    var registry = rest.exchange("/eureka/apps", HttpMethod.GET, new HttpEntity<>(headers), String.class);
+    var registry =
+        rest.exchange("/eureka/apps", HttpMethod.GET, new HttpEntity<>(headers), String.class);
     assertThat(registry.getStatusCode()).isEqualTo(HttpStatus.OK);
     assertThat(registry.getBody()).contains("applications");
   }
 
   @Test
   void exposesHealthProbesWithoutExposingEnvironment() {
-    for (String path : new String[] {"/actuator/health", "/actuator/health/liveness", "/actuator/health/readiness"}) {
+    for (String path :
+        new String[] {
+          "/actuator/health", "/actuator/health/liveness", "/actuator/health/readiness"
+        }) {
       var health = rest.getForEntity(path, String.class);
       assertThat(health.getStatusCode()).as(path).isEqualTo(HttpStatus.OK);
       assertThat(health.getBody()).contains("\"status\":\"UP\"");
