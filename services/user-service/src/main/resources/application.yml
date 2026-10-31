@@ -7,8 +7,15 @@ spring:
     name: user-service
   profiles:
     default: local
+  config:
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+  cloud:
+    config:
+      label: ${CONFIG_GIT_LABEL:main}
+      username: ${CONFIG_USER:}
+      password: ${CONFIG_PASSWORD:}
 
-# Config Server/DB/외부 API는 후속 구현에서 연결한다.
+# Eureka/Probe 기본값은 독립 진단용이며 환경별 중앙 설정으로 덮어쓸 수 있다.
 eureka:
   client:
     serviceUrl:
