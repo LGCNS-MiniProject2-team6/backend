@@ -1,5 +1,7 @@
 # Config Server 실행·설정 저장소 인계
 
+Gateway를 포함한 후속 실행·라우팅·CORS는 [Gateway 안내](GATEWAY_GUIDE.md)를 참고한다.
+
 **원격 저장소 연결:** 별도 Private 저장소가 생성됐다. 현재 연결·검증 절차는 [원격 Config 안내](REMOTE_CONFIG_GUIDE.md)를 우선 참고한다. 아래 로컬 Git 절차는 계정 없이 검증하는 대안으로 유지한다.
 
 관련 이슈: #7. Eureka → Config Server → Auth/User/AI/Blog 순서로 실행한다. Config Server는 8888, Eureka는 8761, 도메인 서비스는 기존 8081~8084를 사용한다. 기존 모놀리스의 `.env`와 실행 설정은 변경하지 않았다.

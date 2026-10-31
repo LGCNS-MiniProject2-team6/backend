@@ -1,5 +1,7 @@
 # MSA 서비스 골격 실행 및 백엔드 인계 (이슈 #3 기준)
 
+Gateway를 포함한 후속 실행·라우팅·CORS는 [Gateway 안내](GATEWAY_GUIDE.md)를 참고한다.
+
 **현재 실행 순서 변경:** 이슈 #7부터 네 서비스의 기본 실행에는 Config Server가 필요하다. 먼저 [Config Server 실행 안내](CONFIG_SERVER_GUIDE.md)에 따라 Eureka → Config → 네 서비스를 실행한다. 아래 내용은 이슈 #3의 골격 구조와 Config를 명시적으로 끈 진단 실행을 설명한다.
 
 관련 이슈: #3. 이번 범위는 **Eureka + Auth/User/AI/Blog의 독립 실행과 등록**이다. 기존 로그인/프로필/게시글/AI 로직을 새 서비스로 옮긴 상태는 아니다. Config Server·Gateway·Bus·DB·클라우드 배포는 후속 작업이다.
