@@ -1,1 +1,4 @@
 rootProject.name = 'backend'
+
+// 기존 루트 모놀리스는 유지하고 MSA 모듈을 추가한다.
+include 'platform:discovery-server'
