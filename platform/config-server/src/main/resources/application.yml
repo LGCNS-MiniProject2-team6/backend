@@ -14,7 +14,7 @@ spring:
       server:
         accept-empty: false
         git:
-          uri: ${CONFIG_GIT_URI}
+          uri: ${CONFIG_GIT_URI:https://github.com/LGCNS-MiniProject2-team6/recu-config.git}
           default-label: ${CONFIG_GIT_LABEL:main}
           try-master-branch: false
           clone-on-start: true
