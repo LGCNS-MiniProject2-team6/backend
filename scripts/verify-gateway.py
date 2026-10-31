@@ -135,7 +135,7 @@ def main():
                        CONFIG_GIT_USERNAME='', CONFIG_GIT_TOKEN='',
                        CONFIG_SERVER_URL=f'http://127.0.0.1:{ports[1]}',
                        EUREKA_URL=eureka + '/', FRONTEND_ORIGIN=origin,
-                       SPRING_PROFILES_ACTIVE=args.profile)
+                       SPRING_PROFILES_ACTIVE=args.profile, BUS_ENABLED='false')
             for i, (name, jar, port) in enumerate(zip(names, jars, ports)):
                 reservations[i].close()
                 log = (log_dir / f'{name}.log').open('w')

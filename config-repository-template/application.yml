@@ -10,3 +10,7 @@ info:
   config:
     source: recu-config
     version: v1
+
+# Bus 검증용 비밀이 아닌 동적 설정. 실행 중 변경 후 관리자 busrefresh 호출
+demo:
+  config-version: v1

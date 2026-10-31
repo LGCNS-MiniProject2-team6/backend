@@ -93,7 +93,7 @@ def main():
             logs.append(log)
             env = dict(os.environ, SERVER_PORT=str(port),
                        EUREKA_URL=f'http://127.0.0.1:{ports[0]}/eureka/',
-                       SPRING_PROFILES_ACTIVE='standalone')
+                       SPRING_PROFILES_ACTIVE='standalone', BUS_ENABLED='false')
             process = subprocess.Popen(
                 [java, '-Xms64m', '-Xmx256m', '-jar', str(jar)],
                 cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,
