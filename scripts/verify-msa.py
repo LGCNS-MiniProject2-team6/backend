@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""빌드된 5개 JAR의 health와 실제 Eureka 등록을 검증하고 자신이 띄운 프로세스를 종료한다."""
+"""Config를 명시적으로 끄고 5개 JAR의 health/Eureka 등록을 독립 진단한다."""
 import argparse
 import json
 import os
@@ -92,7 +92,8 @@ def main():
             log = (log_dir / f'{name}.log').open('w')
             logs.append(log)
             env = dict(os.environ, SERVER_PORT=str(port),
-                       EUREKA_URL=f'http://127.0.0.1:{ports[0]}/eureka/')
+                       EUREKA_URL=f'http://127.0.0.1:{ports[0]}/eureka/',
+                       SPRING_PROFILES_ACTIVE='standalone')
             process = subprocess.Popen(
                 [java, '-Xms64m', '-Xmx256m', '-jar', str(jar)],
                 cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,

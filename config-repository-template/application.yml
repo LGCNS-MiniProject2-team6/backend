@@ -1,0 +1,12 @@
+# 이 디렉터리의 YAML만 별도 recu-config Git 저장소 루트로 복사한다.
+# 비밀번호/토큰은 이 파일이나 info 하위에 넣지 않는다.
+server:
+  shutdown: graceful
+management:
+  info:
+    env:
+      enabled: true
+info:
+  config:
+    source: recu-config
+    version: v1
