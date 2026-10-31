@@ -13,3 +13,5 @@
 - 파일명이 다르거나 프로필이 잘못되면 공통 파일만 읽히는 경우가 있으므로 info.config.service/profile까지 확인한다.
 
 실행 및 별도 저장소 준비 순서는 docs/CONFIG_SERVER_GUIDE.md를 참고한다.
+
+운영 설정 원천은 별도 https://github.com/LGCNS-MiniProject2-team6/recu-config 저장소다. 이 템플릿은 초기 예제와 임시 Git 회귀 검증 fixture로 유지하며 자동 동기화되지 않는다. 원격 연결은 docs/REMOTE_CONFIG_GUIDE.md를 참고한다.
