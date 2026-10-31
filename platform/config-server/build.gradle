@@ -5,3 +5,20 @@ dependencies {
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
     implementation 'org.springframework.boot:spring-boot-starter-security'
 }
+
+apply from: '../../gradle/msa-bus.gradle'
+
+dependencies {
+    testImplementation 'org.springframework.kafka:spring-kafka-test'
+}
+
+// Docker 없이 실제 Kafka 브로커를 실행하는 검증 전용 classpath. 앱 이미지에는 포함하지 않는다.
+tasks.register('writeBusTestClasspath') {
+    dependsOn testClasses
+    def targetFile = layout.buildDirectory.file('bus-test-classpath.txt')
+    inputs.files(sourceSets.test.runtimeClasspath)
+    outputs.file(targetFile)
+    doLast {
+        targetFile.get().asFile.text = sourceSets.test.runtimeClasspath.asPath
+    }
+}

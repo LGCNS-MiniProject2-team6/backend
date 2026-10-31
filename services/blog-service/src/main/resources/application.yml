@@ -3,6 +3,8 @@ server:
   shutdown: graceful
 
 spring:
+  config:
+    import: classpath:bus.yml
   application:
     name: blog-service
   profiles:

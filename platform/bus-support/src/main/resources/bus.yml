@@ -1,0 +1,23 @@
+# Config Server도 자기 Git을 import하지 않고 이 부팅 계약으로 Kafka에 연결한다.
+spring:
+  cloud:
+    bus:
+      enabled: ${BUS_ENABLED:false}
+      destination: ${BUS_DESTINATION:recu-config-bus-local}
+      id: ${BUS_INSTANCE_ID:${spring.application.name}:${HOSTNAME:local}:${server.port}}
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+          auto-create-topics: false
+          auto-add-partitions: false
+          configuration:
+            '[security.protocol]': ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+            '[sasl.mechanism]': ${KAFKA_SASL_MECHANISM:PLAIN}
+            '[sasl.jaas.config]': ${KAFKA_SASL_JAAS_CONFIG:}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    properties:
+      '[security.protocol]': ${KAFKA_SECURITY_PROTOCOL:PLAINTEXT}
+      '[sasl.mechanism]': ${KAFKA_SASL_MECHANISM:PLAIN}
+      '[sasl.jaas.config]': ${KAFKA_SASL_JAAS_CONFIG:}
