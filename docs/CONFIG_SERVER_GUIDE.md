@@ -1,5 +1,7 @@
 # Config Server 실행·설정 저장소 인계
 
+**원격 저장소 연결:** 별도 Private 저장소가 생성됐다. 현재 연결·검증 절차는 [원격 Config 안내](REMOTE_CONFIG_GUIDE.md)를 우선 참고한다. 아래 로컬 Git 절차는 계정 없이 검증하는 대안으로 유지한다.
+
 관련 이슈: #7. Eureka → Config Server → Auth/User/AI/Blog 순서로 실행한다. Config Server는 8888, Eureka는 8761, 도메인 서비스는 기존 8081~8084를 사용한다. 기존 모놀리스의 `.env`와 실행 설정은 변경하지 않았다.
 
 ## 이번에 구현한 것
@@ -34,7 +36,7 @@ file:///Users/hy/Desktop/miniproject2/recu-config
 
 다른 위치를 쓰면 실제 절대경로로 바꾼다. 변경 YAML은 commit한 뒤 조회한다. 원격 저장소 사용 시 실제 Git URL로 바꾸고 commit/push해야 반영된다. main 브랜치를 사용하고 master로 자동 fallback하지 않는다.
 
-GitHub 저장소 생성/원격 push는 이번 로컬 구현 과정에서 수행하지 않았다. 확인한 `LGCNS-MiniProject2-team6/recu-config`는 현재 인증으로 조회되지 않았다(미생성 또는 접근 권한 없음). 원격 주소와 읽기 권한이 준비되면 연결한다. 템플릿 파일을 복사한 로컬 Git으로도 동일한 Git backend 경로를 검증할 수 있다.
+GitHub 저장소 생성/원격 push는 이번 로컬 구현 과정에서 수행하지 않았다. 이슈 #7 구현 당시에는 조회할 수 없었지만 이슈 #9에서 Private recu-config 저장소와 Git 읽기 접근을 확인했다. 실제 설정 업로드/원격 main 검증 상태는 원격 Config 안내에서 관리한다. 템플릿 파일을 복사한 로컬 Git으로도 동일한 Git backend 경로를 검증할 수 있다.
 
 ## 2. 환경변수 입력
 
