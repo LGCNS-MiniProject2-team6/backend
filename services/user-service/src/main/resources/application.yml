@@ -7,8 +7,6 @@ spring:
     name: user-service
   profiles:
     default: local
-  config:
-    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     config:
       label: ${CONFIG_GIT_LABEL:main}
@@ -36,3 +34,20 @@ management:
       show-details: never
       probes:
         enabled: true
+
+---
+spring:
+  config:
+    activate:
+      on-profile: "!standalone"
+    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+
+---
+# Config 연결 자체를 제외하는 로컬 장애 분리용 명시적 프로필
+spring:
+  config:
+    activate:
+      on-profile: standalone
+  cloud:
+    config:
+      enabled: false
