@@ -1,3 +1,4 @@
 rootProject.name = 'recu-platform'
 include 'discovery-server'
 include 'config-server'
+include 'api-gateway'

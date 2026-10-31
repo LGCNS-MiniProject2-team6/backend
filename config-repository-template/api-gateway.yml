@@ -1,0 +1,47 @@
+# 공통 라우팅. 클라이언트의 /api 경로를 제거하지 않고 그대로 전달한다.
+info:
+  config:
+    service: api-gateway
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: false
+      httpclient:
+        connect-timeout: 5000
+        response-timeout: 10s
+      default-filters:
+        - RemoveRequestHeader=X-User-Id
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
+      globalcors:
+        add-to-simple-url-handler-mapping: true
+        cors-configurations:
+          '[/api/**]':
+            allowedMethods: [GET, POST, PUT, PATCH, DELETE, OPTIONS]
+            allowedHeaders: [Authorization, Content-Type, Refresh-Token, X-Request-Id]
+            exposedHeaders: [Authorization, Refresh-Token]
+            allowCredentials: true
+            maxAge: 600
+      routes:
+        - id: auth
+          uri: lb://auth-service
+          predicates:
+            - Path=/api/auth,/api/auth/**
+        - id: user
+          uri: lb://user-service
+          predicates:
+            - Path=/api/profile,/api/profile/**,/api/bookmarks,/api/bookmarks/**,/api/notifications,/api/notifications/**
+        - id: ai-guide
+          order: -10
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/posts/*/guide
+          metadata:
+            connect-timeout: 5000
+            response-timeout: 120000
+        - id: blog
+          order: 0
+          uri: lb://blog-service
+          predicates:
+            - Path=/api/posts,/api/posts/**,/api/companies,/api/companies/**,/api/tech-tags,/api/tech-tags/**,/api/admin/collect,/api/admin/collect/**
