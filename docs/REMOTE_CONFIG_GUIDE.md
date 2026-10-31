@@ -126,3 +126,16 @@ Config 인증은 임시 무작위 값으로 생성해 Git 자격 증명과 분�
 - 기존 임시 Git/local 프로필 통합 검증 회귀 통과
 - 인증정보가 든 URI, HTTP URI, slash 포함 label을 거부하는 입력 검사 통과
 - 검증 과정에서 원본 recu-config 작업 브랜치와 worktree가 유지됨을 확인
+
+## 최종 원격 연결 확인 (2026-11-01 KST)
+
+위의 업로드 전 기록 이후 recu-config PR #1이 main에 반영되었고, 사용자가 승인된 Git 토큰으로 IntelliJ에서 실행했다.
+
+- 실행 중인 Config Server의 Git URI가 실제 HTTPS recu-config 주소이고 label이 main임을 확인
+- 인증된 `/blog-service/local/main` 조회 성공
+- 응답 version `5f117dbbb29557b0f34a5eb3fd181f52f2dce79c`가 GitHub recu-config/main의 실제 commit과 일치
+- 네 서비스 `/actuator/info`에서 source=recu-config, version=v1, profile=local 및 해당 service 이름 확인
+- 사용자 Eureka 화면에서 CONFIG-SERVER 및 네 도메인 서비스 모두 UP 확인
+- Git 토큰은 조회·출력하거나 파일에 기록하지 않음
+
+따라서 로컬 PC에서 실제 Private GitHub/main → Config Server → 네 서비스의 연결이 확인되었다. 이는 AWS 배포 검증과는 별개다. 최초 업로드 전 후보 검증 기록은 이력을 위해 유지한다.
