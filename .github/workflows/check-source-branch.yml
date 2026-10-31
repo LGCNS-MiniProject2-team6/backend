@@ -1,0 +1,30 @@
+name: Check Source Branch
+
+# 대상 브랜치의 Workflow로 검사해 PR에서 검사 코드를 바꿔 통과하는 것을 방지한다.
+# PR의 코드 checkout/실행과 Secret 접근은 하지 않는다.
+on:
+  pull_request_target:
+    branches: [main]
+    types: [opened, synchronize, reopened, edited, ready_for_review]
+
+permissions: {}
+
+jobs:
+  check-main-source:
+    name: check-main-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Verify PR comes from this repository's develop
+        env:
+          HEAD_BRANCH: ${{ github.event.pull_request.head.ref }}
+          HEAD_REPOSITORY_ID: ${{ github.event.pull_request.head.repo.id }}
+          TARGET_REPOSITORY_ID: ${{ github.repository_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ "$HEAD_BRANCH" != "develop" || "$HEAD_REPOSITORY_ID" != "$TARGET_REPOSITORY_ID" ]]; then
+            echo '::error::main 브랜치에는 같은 저장소의 develop 브랜치에서만 병합할 수 있습니다.'
+            exit 1
+          fi
+          echo '같은 저장소의 develop 브랜치에서 생성된 PR입니다.'
