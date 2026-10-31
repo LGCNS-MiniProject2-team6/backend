@@ -4,6 +4,10 @@
 
 Auth/User/AI/Blog가 자신의 주소를 등록할 Eureka 서버다. Java 17, Spring Boot 3.4.5, Spring Cloud 2024.0.2를 사용한다. 기본 포트는 8761이며 서버 자체 등록과 레지스트리 조회는 비활성화한다.
 
+## 4개 서비스 공통 프로젝트로 실행하기
+
+이슈 #3에서 저장소 루트 `settings.gradle`에 플랫폼과 Auth/User/AI/Blog를 등록했다. 전체 MSA를 실행할 때는 IntelliJ에서 **backend 루트**를 열고 [MSA 실행 안내](../../docs/MSA_LOCAL_GUIDE.md)를 따른다. 아래 platform 단독 실행 방식도 유지된다. 공통 빌드 설정은 저장소의 `gradle/msa-common.gradle`을 사용한다.
+
 ## 빌드 구조
 
 기존 모놀리스의 `build.gradle`, `settings.gradle`, DB 설정은 변경하지 않았다. `platform`은 독립된 Gradle 멀티 프로젝트이며 저장소 루트의 wrapper를 `-p platform`으로 재사용한다. 이후 Config/Gateway 모듈을 여기에 추가할 수 있다. 하위에 별도 Git 저장소나 wrapper를 만들지 않는다.
