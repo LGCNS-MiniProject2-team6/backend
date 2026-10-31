@@ -1,5 +1,7 @@
 # 원격 recu-config 연결 및 검증
 
+**이슈 #13 이후:** Config Server에는 ENCRYPT_KEY가 필수다. 읽기 인증은 유지하고, 관리 API/Secret 주입은 [암호화 안내](CONFIG_ENCRYPTION_GUIDE.md)를 참고한다.
+
 관련 이슈: #9. 설정 저장소는 [LGCNS-MiniProject2-team6/recu-config](https://github.com/LGCNS-MiniProject2-team6/recu-config)이며 **Private, 기본 브랜치 main**이다. backend와 recu-config는 별개 Git 저장소로 관리한다.
 
 ## 검토와 반영 순서
