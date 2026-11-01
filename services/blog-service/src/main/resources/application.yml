@@ -3,6 +3,14 @@ server:
   shutdown: graceful
 
 spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:none}
   config:
     import: classpath:bus.yml
   application:

@@ -3,6 +3,14 @@ server:
   shutdown: graceful
 
 spring:
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:none}
   config:
     import: classpath:bus.yml
   application:
@@ -14,6 +22,14 @@ spring:
       label: ${CONFIG_GIT_LABEL:main}
       username: ${CONFIG_USER:}
       password: ${CONFIG_PASSWORD:}
+
+gemini:
+  api-key: ${GEMINI_API_KEY:}
+  prompt-version: ${GEMINI_PROMPT_VERSION:v1}
+
+collect:
+  classify:
+    model: ${GEMINI_GUIDE_MODEL:gemini-3.5-flash-lite}
 
 # Eureka/Probe 기본값은 독립 진단용이며 환경별 중앙 설정으로 덮어쓸 수 있다.
 eureka:
