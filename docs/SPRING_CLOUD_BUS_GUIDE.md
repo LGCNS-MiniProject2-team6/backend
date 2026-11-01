@@ -41,6 +41,58 @@ python3 scripts/verify-config.py --verify-bus
 
 이 검증은 임시 자격증명을 사용하며 실제 토큰을 출력하지 않는다. `--verify-bus`와 외부 `--git-uri`는 함께 쓸 수 없다. 환경별 Kafka ACL/TLS·AWS 네트워크 검증은 실제 공통 Kafka 준비 후 진행한다.
 
+### 처음 따라 하는 자동 검증 순서
+
+1. IntelliJ에서 backend 프로젝트를 연다. 하단 Terminal을 누른다(안 보이면 View → Tool Windows → Terminal).
+2. 다음 명령으로 프로젝트 위치를 맞춘다.
+
+```bash
+cd /Users/hy/Desktop/miniproject2/backend
+pwd
+```
+
+출력 마지막이 /miniproject2/backend인지 확인한다.
+
+3. Java 17을 선택한다. IntelliJ의 Run Configuration 변수와 Terminal의 환경변수는 별개이므로 아래 명령은 이 터미널에서 실행한다.
+
+```bash
+export JAVA_HOME=$(/usr/libexec/java_home -v 17)
+"$JAVA_HOME/bin/java" -version
+```
+
+버전이 17인지 확인한다.
+
+4. JAR와 테스트 Kafka 실행 classpath를 준비한다. 첫 실행은 의존성 다운로드가 필요할 수 있다. BUILD SUCCESSFUL을 확인한 다음으로 넘어간다.
+
+```bash
+bash ./gradlew test spotlessCheck bootJar :platform:config-server:writeBusTestClasspath --no-daemon
+```
+
+5. 아래 명령을 한 번 실행한다. 직접 별도의 Kafka·Config·도메인 앱을 띄울 필요가 없고, GitHub 토큰·.env·암호화 키도 준비할 필요가 없다. 읽기/관리 계정은 스크립트가 임시로 만든다.
+
+```bash
+python3 scripts/verify-config.py --verify-bus
+```
+
+6. PASS가 출력될 때까지 기다린다. 다음 네 줄을 확인한다.
+
+```text
+PASS Bus user-service: v1 -> v2, PID/startTime/Bus ID 유지
+PASS Bus ai-service: v1 -> v2, PID/startTime/Bus ID 유지
+PASS Bus blog-service: v1 -> v2, PID/startTime/Bus ID 유지
+PASS Bus api-gateway: v1 -> v2, PID/startTime/Bus ID 유지
+```
+
+무인증 401/읽기 계정 403·관리자 한 번 호출·fail-fast 검사도 PASS여야 한다. 별도 Auth PASS 줄은 없어야 한다. 마지막 정리 문구는 실패 때도 출력하므로 그것만으로 성공을 판단하지 않는다. 명령이 끝나자마자 다음 명령을 실행해 0인지 확인할 수 있다.
+
+```bash
+echo $?
+```
+
+빈 포트에서 임시 프로세스를 띄우므로 기존 localhost:8761 화면과 이 검증은 별개다. 완료 시 임시 앱은 종료되며, 실제 recu-config 작업 파일이나 원격 main을 수정하지 않는다. 이번 검증은 테스트 Git → Config → 실제 Kafka → 네 앱의 RefreshScope 값 변경을 검증하는 것이고 운영 GitHub/공통 Kafka/AWS 실배포 검증은 아니다.
+
+오류가 나면 BUILD FAILED 또는 Traceback의 원인과 첫 줄 Logs에 나온 임시 경로를 확인한다. classpath 파일이 없다는 메시지는 4번 빌드부터 다시 확인한다. 로그 공유 시 실제 계정이나 토큰·설정 응답 전체는 붙이지 않는다.
+
 ## 2. IntelliJ에서 눈으로 확인하기
 
 ### 로컬 테스트 Kafka 준비
