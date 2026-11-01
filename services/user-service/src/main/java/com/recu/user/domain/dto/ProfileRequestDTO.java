@@ -19,4 +19,3 @@ public class ProfileRequestDTO {
   private List<Long> haveSkillIds;
   private List<Long> wantSkillIds;
 }
-

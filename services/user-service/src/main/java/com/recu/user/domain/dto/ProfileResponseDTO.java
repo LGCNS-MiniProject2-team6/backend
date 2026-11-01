@@ -24,4 +24,3 @@ public class ProfileResponseDTO {
 
   public record SkillResponseDTO(Long techTagId, String name) {}
 }
-
