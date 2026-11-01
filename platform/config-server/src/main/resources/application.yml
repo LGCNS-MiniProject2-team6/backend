@@ -3,6 +3,8 @@ server:
   shutdown: graceful
 
 spring:
+  config:
+    import: classpath:bus.yml
   application:
     name: config-server
   security:
@@ -35,17 +37,18 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info
+        include: health,info,busrefresh
   endpoint:
     health:
       show-details: never
       probes:
         enabled: true
 
-# 복호화 키는 Config Server에만 주입한다. 저장소에 실값을 기록하지 않는다.
-encrypt:
-  key: ${ENCRYPT_KEY}
 config:
   management:
     username: ${CONFIG_ADMIN_USER:}
     password: ${CONFIG_ADMIN_PASSWORD:}
+
+# Config에만 주입하는 암호화 키. Git에 실값을 기록하지 않는다.
+encrypt:
+  key: ${ENCRYPT_KEY}

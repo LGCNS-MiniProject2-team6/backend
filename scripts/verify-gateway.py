@@ -20,7 +20,7 @@ spec = importlib.util.spec_from_file_location('msa_verify', ROOT / 'scripts/veri
 msa = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(msa)
 HTTP = urllib.request.build_opener(urllib.request.ProxyHandler({}))
-SERVICES = ['auth-service', 'user-service', 'ai-service', 'blog-service']
+SERVICES = ['user-service', 'ai-service', 'blog-service']
 
 
 def request(url, method='GET', headers=None, body=None):
@@ -135,7 +135,7 @@ def main():
                        CONFIG_GIT_USERNAME='', CONFIG_GIT_TOKEN='',
                        CONFIG_SERVER_URL=f'http://127.0.0.1:{ports[1]}',
                        EUREKA_URL=eureka + '/', FRONTEND_ORIGIN=origin,
-                       SPRING_PROFILES_ACTIVE=args.profile)
+                       SPRING_PROFILES_ACTIVE=args.profile, BUS_ENABLED='false')
             for i, (name, jar, port) in enumerate(zip(names, jars, ports)):
                 reservations[i].close()
                 log = (log_dir / f'{name}.log').open('w')
@@ -177,8 +177,9 @@ def main():
             print('PASS Gateway: Config 수신, Eureka UP, 실제 lb:// 인스턴스 연결', flush=True)
 
             cases = [
-                ('POST', '/api/auth/google', 'auth-service'),
-                ('POST', '/api/auth/refresh', 'auth-service'),
+                ('POST', '/api/auth', 'user-service'),
+                ('POST', '/api/auth/google', 'user-service'),
+                ('POST', '/api/auth/refresh', 'user-service'),
                 ('GET', '/api/profile', 'user-service'),
                 ('PUT', '/api/profile', 'user-service'),
                 ('GET', '/api/bookmarks', 'user-service'),
@@ -229,7 +230,7 @@ def main():
             assert headers.get('Refresh-Token') == 'test-response-refresh'
             print('PASS CORS: 허용/거부 Origin, 미매칭 OPTIONS, 응답 토큰 헤더 노출', flush=True)
             before = sum(len(stub[2]) for stub in stubs)
-            for path in ['/eureka/apps', '/auth-service/local/main', '/encrypt', '/decrypt',
+            for path in ['/eureka/apps', '/user-service/local/main', '/encrypt', '/decrypt',
                          '/internal/config-version', '/actuator/env', '/actuator/gateway/routes',
                          '/actuator/busrefresh', '/api-gateway/actuator/health', '/api/not-a-route']:
                 status, _, _ = request(gateway + path)

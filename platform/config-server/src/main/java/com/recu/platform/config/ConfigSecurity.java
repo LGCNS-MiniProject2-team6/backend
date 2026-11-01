@@ -53,15 +53,16 @@ public class ConfigSecurity {
   SecurityFilterChain configSecurityFilterChain(HttpSecurity http) throws Exception {
     return http.sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        // HTTP Basic 기반 내부 관리 POST 두 개만 제외하며 다른 경로의 CSRF 정책은 유지한다.
-        .csrf(csrf -> csrf.ignoringRequestMatchers("/encrypt", "/decrypt"))
+        // HTTP Basic 기반 암복호화/Bus 관리 POST만 제외하며 다른 경로의 CSRF 정책은 유지한다.
+        .csrf(csrf -> csrf.ignoringRequestMatchers("/encrypt", "/decrypt", "/actuator/busrefresh"))
         .authorizeHttpRequests(
             auth ->
                 auth.requestMatchers("/actuator/health", "/actuator/health/**")
                     .permitAll()
-                    .requestMatchers(HttpMethod.POST, "/encrypt", "/decrypt")
+                    .requestMatchers(
+                        HttpMethod.POST, "/encrypt", "/decrypt", "/actuator/busrefresh")
                     .hasRole("CONFIG_ADMIN")
-                    .requestMatchers("/encrypt/**", "/decrypt/**")
+                    .requestMatchers("/encrypt/**", "/decrypt/**", "/actuator/busrefresh/**")
                     .denyAll()
                     .requestMatchers(HttpMethod.GET, "/**")
                     .hasRole("CONFIG_READER")

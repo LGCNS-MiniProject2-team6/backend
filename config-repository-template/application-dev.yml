@@ -1,3 +1,7 @@
 info:
   config:
     profile: dev
+spring:
+  cloud:
+    bus:
+      destination: ${BUS_DESTINATION:recu-config-bus-dev}

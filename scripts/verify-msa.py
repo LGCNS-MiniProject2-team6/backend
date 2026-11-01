@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Config를 명시적으로 끄고 5개 JAR의 health/Eureka 등록을 독립 진단한다."""
+"""Config를 명시적으로 끄고 4개 JAR의 health/Eureka 등록을 독립 진단한다."""
 import argparse
 import json
 import os
@@ -13,7 +13,7 @@ import urllib.error
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
-SERVICES = ['auth-service', 'user-service', 'ai-service', 'blog-service']
+SERVICES = ['user-service', 'ai-service', 'blog-service']
 # 로컬 검증에 시스템 HTTP proxy를 경유하지 않는다.
 HTTP = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
@@ -50,7 +50,7 @@ def registered(ports):
         if isinstance(instances, dict):
             instances = [instances]
         observed[app['name'].lower()] = instances
-    return all(
+    return 'auth-service' not in observed and all(
         any(instance['status'] == 'UP'
             and int(instance['port']['$']) == port
             for instance in observed.get(name, []))
@@ -61,7 +61,7 @@ def registered(ports):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--fixed-ports', action='store_true',
-                        help='8761/8081/8082/8083/8084로 검증. 기본은 빈 포트 자동 선택')
+                        help='8761/8082/8083/8084로 검증. 기본은 빈 포트 자동 선택')
     args = parser.parse_args()
     java = str(Path(os.environ['JAVA_HOME']) / 'bin/java') if os.environ.get('JAVA_HOME') else shutil.which('java')
     if not java or not Path(java).is_file():
@@ -82,7 +82,7 @@ def main():
     print(f'Logs: {log_dir}', flush=True)
     try:
         ports = []
-        for port in ([8761, 8081, 8082, 8083, 8084] if args.fixed_ports else [0] * 5):
+        for port in ([8761, 8082, 8083, 8084] if args.fixed_ports else [0] * len(names)):
             sock = socket.socket()
             reservations.append(sock)
             sock.bind(('127.0.0.1', port))
@@ -93,7 +93,7 @@ def main():
             logs.append(log)
             env = dict(os.environ, SERVER_PORT=str(port),
                        EUREKA_URL=f'http://127.0.0.1:{ports[0]}/eureka/',
-                       SPRING_PROFILES_ACTIVE='standalone')
+                       SPRING_PROFILES_ACTIVE='standalone', BUS_ENABLED='false')
             process = subprocess.Popen(
                 [java, '-Xms64m', '-Xmx256m', '-jar', str(jar)],
                 cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT,
@@ -107,8 +107,8 @@ def main():
                 wait_until(lambda p=port, h=path: read_json(f'http://127.0.0.1:{p}/actuator/{h}')['status'] == 'UP',
                            processes, 60, f'{name} {path}')
             print(f'PASS {name}: health/liveness/readiness UP (port {port})', flush=True)
-        wait_until(lambda: registered(ports), processes, 90, '4개 서비스 Eureka UP 등록')
-        print('PASS Eureka: AUTH-SERVICE / USER-SERVICE / AI-SERVICE / BLOG-SERVICE UP 및 등록 포트 일치', flush=True)
+        wait_until(lambda: registered(ports), processes, 90, '3개 서비스 Eureka UP 등록')
+        print('PASS Eureka: USER-SERVICE / AI-SERVICE / BLOG-SERVICE UP 및 등록 포트 일치', flush=True)
     finally:
         for sock in reservations:
             sock.close()
