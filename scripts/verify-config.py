@@ -136,7 +136,7 @@ def main():
             base_env = dict(os.environ, CONFIG_USER=username, CONFIG_PASSWORD=password,
                             CONFIG_GIT_URI=git_uri, CONFIG_GIT_LABEL=label,
                             CONFIG_GIT_USERNAME=git_username, CONFIG_GIT_TOKEN=git_token,
-                            CONFIG_SERVER_URL=config_url,
+                            CONFIG_SERVER_URL=config_url, FRONTEND_ORIGIN='http://localhost:5173',
                             EUREKA_URL=f'http://127.0.0.1:{ports[0]}/eureka/',
                             SPRING_PROFILES_ACTIVE=args.profile,
                             BUS_ENABLED='true' if args.verify_bus else 'false',
@@ -158,8 +158,8 @@ def main():
                     msa.wait_until(lambda p=port: request_json(f'http://127.0.0.1:{p}/actuator/health')['status'] == 'UP',
                                    processes, 60, f'{name} health')
                 if i == 1:
-                    expect_unauthorized(f'{config_url}/auth-service/local/{label}')
-                    expect_unauthorized(f'{config_url}/auth-service/local/{label}', username, 'wrong-password')
+                    expect_unauthorized(f'{config_url}/user-service/local/{label}')
+                    expect_unauthorized(f'{config_url}/user-service/local/{label}', username, 'wrong-password')
                     print('PASS Config: 무인증/잘못된 인증 조회 401', flush=True)
                     for profile in ['local', 'dev', 'prod']:
                         for service in services:
@@ -173,7 +173,7 @@ def main():
                             assert effective['info.config.profile'] == profile
                             assert effective['info.config.service'] == service
                             assert effective['info.config.version'] == marker
-                    print('PASS Config: 4개 서비스 x local/dev/prod 설정 및 Git commit 일치', flush=True)
+                    print('PASS Config: 3개 서비스 x local/dev/prod 설정 및 Git commit 일치', flush=True)
             for name, port in zip(names, ports):
                 for path in ['health', 'health/liveness', 'health/readiness']:
                     msa.wait_until(lambda p=port, h=path: request_json(f'http://127.0.0.1:{p}/actuator/{h}')['status'] == 'UP',
@@ -191,12 +191,12 @@ def main():
                     if isinstance(instances, dict):
                         instances = [instances]
                     observed[app['name'].lower()] = instances
-                return all(any(x['status'] == 'UP' and int(x['port']['$']) == port
+                return 'auth-service' not in observed and all(any(x['status'] == 'UP' and int(x['port']['$']) == port
                                for x in observed.get(name, []))
                            for name, port in zip(names[1:], ports[1:]))
 
-            msa.wait_until(all_registered, processes, 90, 'Config + 4개 서비스 Eureka 등록')
-            print('PASS Eureka: Config Server + 도메인 4개 UP 및 포트 일치', flush=True)
+            msa.wait_until(all_registered, processes, 90, 'Config + 3개 서비스 Eureka 등록')
+            print('PASS Eureka: Config Server + 도메인 3개 UP 및 포트 일치', flush=True)
             if args.verify_bus:
                 participants = list(zip(names[1:], ports[1:]))
                 msa.wait_until(lambda: all('partitions assigned' in (logs_dir / f'{name}.log').read_text()
@@ -241,14 +241,14 @@ def main():
                 for path in ['/actuator/busrefresh', '/api/actuator/busrefresh', '/internal/config-version', '/api/internal/config-version']:
                     assert refresh_call(url=gateway_url + path) == 404, path
                 print('PASS Gateway: Bus 관리 API 및 내부 확인 경로 업무 라우트 미노출', flush=True)
-                print('PASS Bus: 관리자 1회 호출로 네 서비스+Gateway 무재시작 갱신, 무인증 401/읽기 계정 403', flush=True)
+                print('PASS Bus: 관리자 1회 호출로 세 서비스+Gateway 무재시작 갱신, 무인증 401/읽기 계정 403', flush=True)
             # 잘못된 Config 인증이면 로컬 기본값만으로 기동되지 않아야 한다.
             log = (logs_dir / 'fail-fast.log').open('w')
             logs.append(log)
             env = dict(base_env, CONFIG_PASSWORD='wrong-password', SERVER_PORT='0')
             bad = subprocess.Popen([java, '-Xms64m', '-Xmx256m', '-jar', str(jars[2])],
                                    cwd=ROOT, env=env, stdout=log, stderr=subprocess.STDOUT)
-            processes.append(('fail-fast-auth-service', bad))
+            processes.append(('fail-fast-user-service', bad))
             assert bad.wait(timeout=30) != 0, '잘못된 Config 인증으로 기동 성공'
             print('PASS Client: 잘못된 Config 인증 시 기동 실패(fail-fast)', flush=True)
     finally:
