@@ -14,6 +14,18 @@ spring:
       label: ${CONFIG_GIT_LABEL:main}
       username: ${CONFIG_USER:}
       password: ${CONFIG_PASSWORD:}
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:userdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
+    username: ${SPRING_DATASOURCE_USERNAME:sa}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
 
 # Eureka/Probe 기본값은 독립 진단용이며 환경별 중앙 설정으로 덮어쓸 수 있다.
 eureka:
