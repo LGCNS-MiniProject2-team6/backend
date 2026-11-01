@@ -27,7 +27,8 @@ public class JwtProvider {
   private final long refreshExpiryMs;
 
   public JwtProvider(
-      @Value("${jwt.secret:default-secret-key-must-be-very-long-and-secure-at-least-256-bits-for-hmac-sha}")
+      @Value(
+              "${jwt.secret:default-secret-key-must-be-very-long-and-secure-at-least-256-bits-for-hmac-sha}")
           String secret,
       @Value("${jwt.access-expiry-ms:86400000}") long accessExpiryMs,
       @Value("${jwt.refresh-expiry-ms:604800000}") long refreshExpiryMs) {

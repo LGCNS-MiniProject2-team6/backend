@@ -42,4 +42,3 @@ public class GlobalExceptionHandler {
 
   public record ErrorResponse(String code, String message, String field) {}
 }
-

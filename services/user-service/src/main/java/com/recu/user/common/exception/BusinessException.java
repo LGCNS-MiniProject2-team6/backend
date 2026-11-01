@@ -20,4 +20,3 @@ public class BusinessException extends RuntimeException {
     this.field = field;
   }
 }
-

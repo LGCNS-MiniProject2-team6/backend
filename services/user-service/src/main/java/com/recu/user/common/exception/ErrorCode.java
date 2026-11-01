@@ -28,4 +28,3 @@ public enum ErrorCode {
     return name();
   }
 }
-
