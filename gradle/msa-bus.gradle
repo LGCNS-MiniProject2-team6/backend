@@ -1,0 +1,5 @@
+// Eureka 서버/모놀리스는 제외하고 Bus에 참여하는 실행 모듈에만 적용한다.
+dependencies {
+    implementation 'org.springframework.cloud:spring-cloud-starter-bus-kafka'
+    implementation project(rootProject.name == 'recu-platform' ? ':bus-support' : ':platform:bus-support')
+}

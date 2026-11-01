@@ -5,3 +5,5 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
 }
+
+apply from: '../../gradle/msa-bus.gradle'

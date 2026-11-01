@@ -1,3 +1,7 @@
 info:
   config:
     profile: local
+spring:
+  cloud:
+    bus:
+      destination: ${BUS_DESTINATION:recu-config-bus-local}

@@ -10,7 +10,9 @@ spring:
   profiles:
     default: local
   config:
-    import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+    import:
+      - classpath:bus.yml
+      - configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     config:
       label: ${CONFIG_GIT_LABEL:main}

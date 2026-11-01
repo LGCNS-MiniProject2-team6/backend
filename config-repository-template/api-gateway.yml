@@ -25,7 +25,7 @@ spring:
             maxAge: 600
       routes:
         - id: auth
-          uri: lb://auth-service
+          uri: lb://user-service
           predicates:
             - Path=/api/auth,/api/auth/**
         - id: user
