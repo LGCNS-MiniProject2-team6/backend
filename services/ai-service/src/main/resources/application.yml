@@ -5,9 +5,9 @@ server:
 spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
-    url: ${DB_URL}
-    username: ${DB_USER}
-    password: ${DB_PASSWORD}
+    url: jdbc:mariadb://127.0.0.1:3306/ai_service
+    username: root
+    password: 8910
   jpa:
     hibernate:
       ddl-auto: ${JPA_DDL_AUTO:none}
@@ -24,7 +24,7 @@ spring:
       password: ${CONFIG_PASSWORD:}
 
 gemini:
-  api-key: ${GEMINI_API_KEY:}
+  api-key: ${GEMINI_API_KEY}
   prompt-version: ${GEMINI_PROMPT_VERSION:v1}
 
 collect:

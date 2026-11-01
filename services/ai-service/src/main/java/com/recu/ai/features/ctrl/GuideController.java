@@ -30,7 +30,7 @@ public class GuideController {
     // S11
     @PostMapping("/{id}/guide")
     public ResponseEntity<GuideResponseDTO> generateGuide(
-            @PathVariable("id") Long id, @RequestHeader Long userId) {
+            @PathVariable("id") Long id, @RequestHeader("userId") Long userId) {
         return ResponseEntity.ok(guideService.generateGuide(userId, id));
     }
 }
