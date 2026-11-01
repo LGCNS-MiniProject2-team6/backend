@@ -78,3 +78,19 @@
 - `verify-gateway.py`: 14개 라우팅/CORS/헤더 보존·미매칭 404·라우팅 누락 fail-fast 통과.
 - `verify-msa.py`: Config/Kafka 없는 standalone health/probe 및 Eureka 등록 통과.
 - AWS·역할 3의 배포 Kafka·TLS/SASL 실접속은 공통 인프라 준비 후 후속 통합 대상이다.
+
+## CONFIG_ENCRYPTION_GUIDE: 최초 암호화 PR의 검증 이력
+
+## 구현 검증 기록 (2026-11-01 KST)
+
+- 전체 Gradle test/spotlessCheck/bootJar 성공
+- 실제 JAR 7개로 관리자 암복호화 왕복, 무인증 401·읽기 계정 403·잘못된 관리자 인증 401 확인
+- 임시 Git에는 cipher 값만 commit되고 평문은 저장되지 않음 확인
+- local/dev/prod x 4개 서비스의 Config 복호화 응답 및 실제 네 서비스 수신 확인
+- 도메인/Gateway에는 ENCRYPT_KEY와 관리자 인증을 주입하지 않음
+- 실제 Gateway에서 GET/POST /encrypt·/decrypt 404 확인
+- 기존 관리자 미설정 상태의 Config 읽기 통합 검증 회귀 성공
+- Gateway 14개 경로·CORS·관리 경로·라우팅 누락 실패 검증 회귀 성공
+- Secret patch와 비활성 cipher 예시 YAML 문법 검사 통과
+- 실제 Kubernetes Secret 생성/배포와 실제 DB 비밀번호 변경은 미수행
+- backend/recu-config 작업 커밋만 준비했으며 원격 push/PR은 검토 승인 전이므로 미수행

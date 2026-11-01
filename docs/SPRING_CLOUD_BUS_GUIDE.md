@@ -1,8 +1,10 @@
 # Kafka 기반 Spring Cloud Bus 실행·검증 (#15)
 
+현재 암호화 통합 브랜치의 Config 직접 실행에는 **ENCRYPT_KEY가 필수**이며 기존 Bus 관리자 계정을 재사용한다. 자동 검증 도구는 임시 키를 생성한다.
+
 현재 #17 기준: **User(인증 포함)·AI·Blog** 3개 서비스다. [통합 실행·검증 안내](AUTH_USER_COMBINE_GUIDE.md)를 먼저 참고한다. 이전 검증 기록은 [이력](history/PRE_AUTH_USER_COMBINE_VALIDATION.md)에 보관한다.
 
-이번 브랜치는 **Bus만** 구현한다. 암복호화 API·ENCRYPT_KEY·암호문 저장은 포함하지 않는다. 암호화 PR #14는 별도 작업이며 먼저 머지할 필요가 없다.
+암호화 통합 후 Config에는 ENCRYPT_KEY가 필수다. Bus는 여전히 기본 false이며 암호화와 독립적으로 활성화한다. 자동 검증은 임시 키를 Config에만 주입한다. [암호화 안내](CONFIG_ENCRYPTION_GUIDE.md) 참고.
 
 ## 무엇이 바뀌는가
 

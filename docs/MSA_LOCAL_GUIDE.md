@@ -1,5 +1,7 @@
 # MSA 로컬 실행: User(인증 포함)·AI·Blog
 
+현재 암호화 통합 브랜치의 Config 직접 실행에는 **ENCRYPT_KEY가 필수**이며 기존 Bus 관리자 계정을 재사용한다. 자동 검증 도구는 임시 키를 생성한다.
+
 #17부터 독립 Auth 실행 구성을 제거한다. 현재 기준 문서는 [Auth·User 통합 안내](AUTH_USER_COMBINE_GUIDE.md)다.
 
 ## 모듈·포트 계약

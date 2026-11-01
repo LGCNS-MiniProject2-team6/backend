@@ -48,3 +48,7 @@ config:
   management:
     username: ${CONFIG_ADMIN_USER:}
     password: ${CONFIG_ADMIN_PASSWORD:}
+
+# Config에만 주입하는 암호화 키. Git에 실값을 기록하지 않는다.
+encrypt:
+  key: ${ENCRYPT_KEY}

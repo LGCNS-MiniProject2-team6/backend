@@ -1,5 +1,7 @@
 # Auth·User 통합 실행·인계 안내 (#17)
 
+현재 암호화 통합 브랜치의 Config 직접 실행에는 **ENCRYPT_KEY가 필수**이며 기존 Bus 관리자 계정을 재사용한다. 자동 검증 도구는 임시 키를 생성한다.
+
 ## 확정 구조
 
 | 서비스 | 기능 개발 범위 | 이름·기본 포트 |
@@ -42,7 +44,7 @@ python3 scripts/verify-gateway.py --config-repo ../recu-config --profile dev
 python3 scripts/verify-config.py --verify-bus
 ```
 
-Gateway 검증은 User·AI·Blog 세 개의 테스트 downstream과 실제 Gateway·Config·Eureka를 사용한다. /api/auth 루트와 Google·refresh 경로 및 기존 User 경로가 같은 User로 전달되는지 확인한다. 실제 업무 컨트롤러·JWT 발급 검증은 아니다. Bus 검증은 실제 도메인 골격 JAR를 띄우고 demo.config-version의 v1→v2 변경과 동일 PID/startTime을 확인한다. 암호화 키 없이 실행된다.
+Gateway 검증은 User·AI·Blog 세 개의 테스트 downstream과 실제 Gateway·Config·Eureka를 사용한다. /api/auth 루트와 Google·refresh 경로 및 기존 User 경로가 같은 User로 전달되는지 확인한다. 실제 업무 컨트롤러·JWT 발급 검증은 아니다. Bus 검증은 실제 도메인 골격 JAR를 띄우고 demo.config-version의 v1→v2 변경과 동일 PID/startTime을 확인한다. 자동 검증이 Config 전용 임시 암호화 키를 주입하므로 사용자 실키 준비 없이 실행된다.
 
 로컬 설정 후보를 Git 커밋 단위로 검증할 수도 있다. CANDIDATE_SHA는 방금 recu-config에 만든 커밋의 실제 SHA로 바꾼다. slash가 포함된 브랜치명 대신 SHA를 쓴다.
 

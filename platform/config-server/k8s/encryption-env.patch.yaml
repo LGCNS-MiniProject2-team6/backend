@@ -1,0 +1,18 @@
+# 기존 Deployment에 병합하는 ENCRYPT_KEY 전용 patch. 단독 apply하지 않는다.
+# 컨테이너 이름 config-server는 예시이며 역할 2의 실제 이름과 일치시킨다.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: config-server
+  namespace: recu-dev
+spec:
+  template:
+    spec:
+      containers:
+        - name: config-server
+          env:
+            - name: ENCRYPT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: config-encryption
+                  key: ENCRYPT_KEY

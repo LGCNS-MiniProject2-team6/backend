@@ -1,5 +1,7 @@
 # Config Server 실행·설정 저장소 인계
 
+**암호화 통합 후 Config에는 ENCRYPT_KEY가 필수다.** [암호화 검증 안내](CONFIG_ENCRYPTION_GUIDE.md)를 따른다.
+
 현재 #17 기준: **User(인증 포함)·AI·Blog** 3개 서비스다. [통합 실행·검증 안내](AUTH_USER_COMBINE_GUIDE.md)를 먼저 참고한다. 이전 검증 기록은 [이력](history/PRE_AUTH_USER_COMBINE_VALIDATION.md)에 보관한다.
 
 후속 #15의 Kafka Bus 실행·무재시작 갱신 검증은 [Spring Cloud Bus 안내](SPRING_CLOUD_BUS_GUIDE.md)를 참고한다. Kafka가 없으면 BUS_ENABLED=false 기본값을 사용한다.
