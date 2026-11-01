@@ -4,7 +4,7 @@
 
 Auth/User/AI/Blog가 자신의 주소를 등록할 Eureka 서버다. Java 17, Spring Boot 3.4.5, Spring Cloud 2024.0.2를 사용한다. 기본 포트는 8761이며 서버 자체 등록과 레지스트리 조회는 비활성화한다.
 
-## 4개 서비스 공통 프로젝트로 실행하기
+## 3개 서비스 공통 프로젝트로 실행하기
 
 이슈 #3에서 저장소 루트 `settings.gradle`에 플랫폼과 Auth/User/AI/Blog를 등록했다. 전체 MSA를 실행할 때는 IntelliJ에서 **backend 루트**를 열고 [MSA 실행 안내](../../docs/MSA_LOCAL_GUIDE.md)를 따른다. 아래 platform 단독 실행 방식도 유지된다. 공통 빌드 설정은 저장소의 `gradle/msa-common.gradle`을 사용한다.
 
@@ -97,7 +97,7 @@ health는 probes group 정보도 포함할 수 있으므로 문자열 전체가 
 
 - 서비스 이름: `discovery-server`
 - 컨테이너/내부 서비스 포트: `8761`
-- 기본 도메인 서비스 이름/포트: `auth-service:8081`, `user-service:8082`, `ai-service:8083`, `blog-service:8084`
+- 현재 도메인 서비스 이름/포트: `user-service:8082`, `ai-service:8083`, `blog-service:8084`
 - 향후 로컬 클라이언트의 Eureka 주소: `http://localhost:8761/eureka/`
 - 동일 Namespace의 K8s 클라이언트 주소: `http://discovery-server:8761/eureka/`
 - Probe: `/actuator/health/liveness`, `/actuator/health/readiness`
@@ -108,16 +108,16 @@ health는 probes group 정보도 포함할 수 있으므로 문자열 전체가 
 ```yaml
 spring:
   application:
-    name: auth-service
+    name: user-service
 server:
-  port: 8081
+  port: 8082
 eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
 ```
 
-클라이언트별로 이름/포트를 바꾼다. `defaultZone` 대소문자를 유지한다. Pod 내부의 `localhost`는 해당 Pod 자신이므로 K8s에서는 반드시 내부 Service 주소를 사용한다. 실제 도메인 4개 등록·heartbeat·장애 복구 검증은 서비스가 준비된 후 수행한다.
+클라이언트별로 이름/포트를 바꾼다. `defaultZone` 대소문자를 유지한다. Pod 내부의 `localhost`는 해당 Pod 자신이므로 K8s에서는 반드시 내부 Service 주소를 사용한다. 실제 도메인 3개 등록·heartbeat·장애 복구 검증은 서비스가 준비된 후 수행한다.
 
 ## 실행이 안 될 때
 
