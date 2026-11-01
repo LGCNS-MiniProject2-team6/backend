@@ -149,6 +149,8 @@ def main():
                 log = (logs_dir / f'{name}.log').open('w')
                 logs.append(log)
                 env = dict(base_env, SERVER_PORT=str(port), BUS_INSTANCE_ID=f'{name}:verification:{port}')
+                if name == 'blog-service':
+                    env['SPRING_PROFILES_INCLUDE'] = 'diagnostic'
                 env.pop('ENCRYPT_KEY', None)
                 env.pop('CONFIG_ADMIN_USER', None)
                 env.pop('CONFIG_ADMIN_PASSWORD', None)
