@@ -72,4 +72,3 @@ public class GoogleUserInfoClient {
   @JsonIgnoreProperties(ignoreUnknown = true)
   public record GoogleTokenInfo(@JsonAlias("aud") String audience) {}
 }
-

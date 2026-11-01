@@ -1,5 +1,6 @@
 package com.recu.user.repository;
 
+import com.recu.user.domain.entity.UserEntity;
 import com.recu.user.domain.entity.UserSkillEntity;
 import com.recu.user.domain.entity.UserSkillPk;
 import java.util.List;
@@ -11,5 +12,9 @@ public interface UserSkillRepository extends JpaRepository<UserSkillEntity, User
 
   List<UserSkillEntity> findByUser_UserId(Long userId);
 
+  List<UserSkillEntity> findAllByUserAndSkillType(UserEntity user, String skillType);
+
   void deleteByUser_UserId(Long userId);
+
+  void deleteAllByUser(UserEntity user);
 }

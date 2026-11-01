@@ -13,4 +13,3 @@ public class UserLoginRequestDTO {
 
   private String googleAccessToken;
 }
-
