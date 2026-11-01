@@ -30,4 +30,3 @@ public class BookmarkResponseDTO {
   private Boolean hasGuide;
   private LocalDateTime createdAt;
 }
-
