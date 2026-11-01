@@ -1,4 +1,4 @@
-package com.recu.user.features.internal.profile.domain.dto;
+package com.recu.user.features.internal.domain.dto;
 
 import java.util.List;
 

@@ -1,7 +1,7 @@
-package com.recu.user.features.internal.profile.ctrl;
+package com.recu.user.features.internal.ctrl;
 
-import com.recu.user.features.internal.profile.domain.dto.ProfileResponseDTO;
-import com.recu.user.features.internal.profile.service.ProfileInternalService;
+import com.recu.user.features.internal.domain.dto.ProfileResponseDTO;
+import com.recu.user.features.internal.service.ProfileInternalService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;

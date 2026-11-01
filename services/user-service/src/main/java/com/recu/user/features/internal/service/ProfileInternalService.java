@@ -1,11 +1,11 @@
-package com.recu.user.features.internal.profile.service;
+package com.recu.user.features.internal.service;
 
-import com.recu.user.features.internal.profile.domain.dto.ProfileResponseDTO;
-import com.recu.user.features.internal.profile.domain.entity.AppUserEntity;
-import com.recu.user.features.internal.profile.domain.entity.UserSkillEntity;
-import com.recu.user.features.internal.profile.repository.AppUserRepository;
-import com.recu.user.features.internal.profile.repository.UserJobFieldRepository;
-import com.recu.user.features.internal.profile.repository.UserSkillRepository;
+import com.recu.user.features.internal.domain.dto.ProfileResponseDTO;
+import com.recu.user.features.internal.domain.entity.AppUserEntity;
+import com.recu.user.features.internal.domain.entity.UserSkillEntity;
+import com.recu.user.features.internal.repository.AppUserRepository;
+import com.recu.user.features.internal.repository.UserJobFieldRepository;
+import com.recu.user.features.internal.repository.UserSkillRepository;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;

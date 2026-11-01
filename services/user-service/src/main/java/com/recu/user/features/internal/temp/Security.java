@@ -1,4 +1,4 @@
-package com.recu.user.internal.security;
+package com.recu.user.features.internal.temp;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

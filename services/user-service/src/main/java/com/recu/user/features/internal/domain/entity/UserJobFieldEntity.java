@@ -1,4 +1,4 @@
-package com.recu.user.features.internal.profile.domain.entity;
+package com.recu.user.features.internal.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

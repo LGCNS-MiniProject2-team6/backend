@@ -1,7 +1,7 @@
-package com.recu.user.features.internal.profile.repository;
+package com.recu.user.features.internal.repository;
 
-import com.recu.user.features.internal.profile.domain.entity.UserSkillEntity;
-import com.recu.user.features.internal.profile.domain.entity.UserSkillId;
+import com.recu.user.features.internal.domain.entity.UserSkillEntity;
+import com.recu.user.features.internal.domain.entity.UserSkillId;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
