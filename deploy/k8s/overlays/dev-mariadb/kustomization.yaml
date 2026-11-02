@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: recu-dev
+resources:
+  - ../../base/data/mariadb.yaml
+patches:
+  - target:
+      kind: StatefulSet
+      name: mariadb
+    patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: mariadb
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              workload: data
+              environment: dev
