@@ -13,13 +13,13 @@ import lombok.Getter;
 @Getter
 public class TechTagEntity {
 
-  @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "tech_tag_id")
-  private Long techTagId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "tech_tag_id")
+    private Long techTagId;
 
-  @Column(nullable = false, length = 50)
-  private String name;
+    @Column(nullable = false, length = 50)
+    private String name;
 
   // Existing Blog columns needed by technology chips and content ingestion.
   @Column(length = 255)

@@ -16,29 +16,29 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/internal")
 public class BlogInternalController {
 
-  private final BlogInternalService blogInternalService;
+    private final BlogInternalService blogInternalService;
 
-  public BlogInternalController(BlogInternalService blogInternalService) {
-    this.blogInternalService = blogInternalService;
-  }
+    public BlogInternalController(BlogInternalService blogInternalService) {
+        this.blogInternalService = blogInternalService;
+    }
 
-  @GetMapping("/blog/{postId}")
-  public PostResponseDTO getPost(@PathVariable Long postId) {
-    return blogInternalService.getPost(postId);
-  }
+    @GetMapping("/blog/{postId}")
+    public PostResponseDTO getPost(@PathVariable Long postId) {
+        return blogInternalService.getPost(postId);
+    }
 
-  @GetMapping("/blog/{postId}/sections")
-  public List<BlogPostSectionResponseDTO> getSections(@PathVariable Long postId) {
-    return blogInternalService.getSections(postId);
-  }
+    @GetMapping("/blog/{postId}/sections")
+    public List<BlogPostSectionResponseDTO> getSections(@PathVariable Long postId) {
+        return blogInternalService.getSections(postId);
+    }
 
-  @GetMapping("/company/{companyId}")
-  public CompanyResponseDTO getCompany(@PathVariable Long companyId) {
-    return blogInternalService.getCompany(companyId);
-  }
+    @GetMapping("/company/{companyId}")
+    public CompanyResponseDTO getCompany(@PathVariable Long companyId) {
+        return blogInternalService.getCompany(companyId);
+    }
 
-  @GetMapping("/tech-tags")
-  public List<TechTagResponseDTO> getTechTags(@RequestParam("ids") List<Long> ids) {
-    return blogInternalService.getTechTags(ids);
-  }
+    @GetMapping("/tech-tags")
+    public List<TechTagResponseDTO> getTechTags(@RequestParam("ids") List<Long> ids) {
+        return blogInternalService.getTechTags(ids);
+    }
 }

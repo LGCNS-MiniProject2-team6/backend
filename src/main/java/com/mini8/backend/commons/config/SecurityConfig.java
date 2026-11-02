@@ -40,7 +40,7 @@ public class SecurityConfig {
   private List<String> corsOrigins;
 
   public SecurityConfig(
-      JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
+          JwtAuthenticationFilter jwtAuthenticationFilter, ObjectMapper objectMapper) {
     this.jwtAuthenticationFilter = jwtAuthenticationFilter;
     this.objectMapper = objectMapper;
   }
@@ -48,50 +48,50 @@ public class SecurityConfig {
   @Bean
   SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf(csrf -> csrf.disable())
-        .cors(Customizer.withDefaults())
-        .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-        .httpBasic(b -> b.disable())
-        .formLogin(f -> f.disable())
-        .exceptionHandling(
-            exceptions ->
-                exceptions
-                    .authenticationEntryPoint(
-                        (request, response, exception) -> writeUnauthorized(response))
-                    // 로그인은 했지만 권한이 모자란 경우. 이게 없으면 403 이 /error 로 넘어가 401 로 바뀐다
-                    .accessDeniedHandler(
-                        (request, response, exception) -> writeForbidden(response)))
-        .authorizeHttpRequests(
-            auth ->
-                auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
-                    .permitAll()
-                    .requestMatchers("/api/auth/logout")
-                    .authenticated()
-                    .requestMatchers("/api/auth/**")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/tech-tags")
-                    .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/api/companies/{id}")
-                    .permitAll()
-                    // 초기 402편 적재용. 관리자 계정을 만드는 길이 아직 없어 잠시 열어 둔다.
-                    // ADMIN 계정이 생기면 이 줄을 지우고 아래 hasRole("ADMIN") 에 맡긴다 (C3)
-                    .requestMatchers(HttpMethod.POST, "/api/admin/collect/import")
-                    .permitAll()
-                    .requestMatchers("/api/admin/**")
-                    .hasRole("ADMIN")
-                    .anyRequest()
-                    .authenticated())
-        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .cors(Customizer.withDefaults())
+            .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .httpBasic(b -> b.disable())
+            .formLogin(f -> f.disable())
+            .exceptionHandling(
+                    exceptions ->
+                            exceptions
+                                    .authenticationEntryPoint(
+                                            (request, response, exception) -> writeUnauthorized(response))
+                                    // 로그인은 했지만 권한이 모자란 경우. 이게 없으면 403 이 /error 로 넘어가 401 로 바뀐다
+                                    .accessDeniedHandler(
+                                            (request, response, exception) -> writeForbidden(response)))
+            .authorizeHttpRequests(
+                    auth ->
+                            auth.requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**")
+                                    .permitAll()
+                                    .requestMatchers("/api/auth/logout")
+                                    .authenticated()
+                                    .requestMatchers("/api/auth/**")
+                                    .permitAll()
+                                    .requestMatchers(HttpMethod.GET, "/api/tech-tags")
+                                    .permitAll()
+                                    .requestMatchers(HttpMethod.GET, "/api/companies/{id}")
+                                    .permitAll()
+                                    // 초기 402편 적재용. 관리자 계정을 만드는 길이 아직 없어 잠시 열어 둔다.
+                                    // ADMIN 계정이 생기면 이 줄을 지우고 아래 hasRole("ADMIN") 에 맡긴다 (C3)
+                                    .requestMatchers(HttpMethod.POST, "/api/admin/collect/import")
+                                    .permitAll()
+                                    .requestMatchers("/api/admin/**")
+                                    .hasRole("ADMIN")
+                                    .anyRequest()
+                                    .authenticated())
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
     return http.build();
   }
 
   @Bean
   OpenAPI openAPI() {
     SecurityScheme bearerScheme =
-        new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT");
+            new SecurityScheme().type(SecurityScheme.Type.HTTP).scheme("bearer").bearerFormat("JWT");
 
     return new OpenAPI()
-        .components(new Components().addSecuritySchemes(BEARER_AUTH_SCHEME, bearerScheme))
-        .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH_SCHEME));
+            .components(new Components().addSecuritySchemes(BEARER_AUTH_SCHEME, bearerScheme))
+            .addSecurityItem(new SecurityRequirement().addList(BEARER_AUTH_SCHEME));
   }
 
   @Bean
@@ -117,7 +117,7 @@ public class SecurityConfig {
   }
 
   private void writeError(HttpServletResponse response, int status, String code, String message)
-      throws IOException {
+          throws IOException {
     ObjectNode body = objectMapper.createObjectNode();
     body.put("code", code);
     body.put("message", message);

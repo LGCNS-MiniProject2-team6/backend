@@ -8,8 +8,8 @@ import org.springframework.data.repository.query.Param;
 
 public interface BlogPostSectionRepository extends JpaRepository<BlogPostSectionEntity, Long> {
 
-  @Query(
-      "select section from BlogPostSectionEntity section "
-          + "where section.blogPost.blog_post_id = :postId order by section.seq")
-  List<BlogPostSectionEntity> findByPostId(@Param("postId") Long postId);
+    @Query(
+            "select section from BlogPostSectionEntity section "
+                    + "where section.blogPost.blog_post_id = :postId order by section.seq")
+    List<BlogPostSectionEntity> findByPostId(@Param("postId") Long postId);
 }

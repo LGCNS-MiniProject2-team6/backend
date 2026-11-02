@@ -21,21 +21,21 @@ import org.springframework.web.server.ResponseStatusException;
 @Transactional(readOnly = true)
 public class BlogInternalService {
 
-  private final BlogPostRepository postRepository;
-  private final BlogPostSectionRepository sectionRepository;
-  private final CompanyRepository companyRepository;
-  private final TechTagRepository techTagRepository;
+    private final BlogPostRepository postRepository;
+    private final BlogPostSectionRepository sectionRepository;
+    private final CompanyRepository companyRepository;
+    private final TechTagRepository techTagRepository;
 
-  public BlogInternalService(
-      BlogPostRepository postRepository,
-      BlogPostSectionRepository sectionRepository,
-      CompanyRepository companyRepository,
-      TechTagRepository techTagRepository) {
-    this.postRepository = postRepository;
-    this.sectionRepository = sectionRepository;
-    this.companyRepository = companyRepository;
-    this.techTagRepository = techTagRepository;
-  }
+    public BlogInternalService(
+            BlogPostRepository postRepository,
+            BlogPostSectionRepository sectionRepository,
+            CompanyRepository companyRepository,
+            TechTagRepository techTagRepository) {
+        this.postRepository = postRepository;
+        this.sectionRepository = sectionRepository;
+        this.companyRepository = companyRepository;
+        this.techTagRepository = techTagRepository;
+    }
 
   public PostResponseDTO getPost(Long postId) {
     BlogPostEntity post =
@@ -73,35 +73,35 @@ public class BlogInternalService {
         company.getLogo_url());
   }
 
-  public List<BlogPostSectionResponseDTO> getSections(Long postId) {
-    if (!postRepository.existsById(postId)) {
-      throw notFound();
+    public List<BlogPostSectionResponseDTO> getSections(Long postId) {
+        if (!postRepository.existsById(postId)) {
+            throw notFound();
+        }
+        return sectionRepository.findByPostId(postId).stream()
+                .map(BlogInternalService::sectionResponse)
+                .toList();
     }
-    return sectionRepository.findByPostId(postId).stream()
-        .map(BlogInternalService::sectionResponse)
-        .toList();
-  }
 
-  public List<TechTagResponseDTO> getTechTags(List<Long> ids) {
-    if (ids == null || ids.isEmpty()) {
-      return List.of();
+    public List<TechTagResponseDTO> getTechTags(List<Long> ids) {
+        if (ids == null || ids.isEmpty()) {
+            return List.of();
+        }
+        return techTagRepository.findAllByTechTagIdInOrderByNameAsc(ids).stream()
+                .map(tag -> new TechTagResponseDTO(tag.getTechTagId(), tag.getName()))
+                .toList();
     }
-    return techTagRepository.findAllByTechTagIdInOrderByNameAsc(ids).stream()
-        .map(tag -> new TechTagResponseDTO(tag.getTechTagId(), tag.getName()))
-        .toList();
-  }
 
-  private static BlogPostSectionResponseDTO sectionResponse(BlogPostSectionEntity section) {
-    return new BlogPostSectionResponseDTO(
-        section.getSection_id(),
-        section.getSeq(),
-        section.getHeading(),
-        section.getLevel(),
-        section.getContent_text(),
-        section.getChar_count());
-  }
+    private static BlogPostSectionResponseDTO sectionResponse(BlogPostSectionEntity section) {
+        return new BlogPostSectionResponseDTO(
+                section.getSection_id(),
+                section.getSeq(),
+                section.getHeading(),
+                section.getLevel(),
+                section.getContent_text(),
+                section.getChar_count());
+    }
 
-  private static ResponseStatusException notFound() {
-    return new ResponseStatusException(HttpStatus.NOT_FOUND);
-  }
+    private static ResponseStatusException notFound() {
+        return new ResponseStatusException(HttpStatus.NOT_FOUND);
+    }
 }
