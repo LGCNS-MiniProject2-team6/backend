@@ -17,3 +17,16 @@ for svc in user ai blog; do
 	GRANT ALL PRIVILEGES ON \`$db\`.* TO '$db'@'%';
 	EOSQL
 done
+
+# 지표 수집 계정 (mysqld-exporter). EXPORTER_DB_PASSWORD가 있을 때만 만든다.
+# 서버 상태만 조회하고 서비스 DB 데이터는 읽지 못한다. 모니터링을 띄우지 않는 환경(prod)은 생략 가능.
+if [ -n "${EXPORTER_DB_PASSWORD:-}" ]; then
+  exporter_esc="$(docker_sql_escape_string_literal "$EXPORTER_DB_PASSWORD")"
+  mysql_note "지표 수집 계정 생성: exporter"
+  docker_process_sql --database=mysql <<-EOSQL
+	CREATE USER IF NOT EXISTS 'exporter'@'%' IDENTIFIED BY '$exporter_esc' WITH MAX_USER_CONNECTIONS 3;
+	GRANT PROCESS, BINLOG MONITOR, SLAVE MONITOR ON *.* TO 'exporter'@'%';
+	EOSQL
+else
+  mysql_note "EXPORTER_DB_PASSWORD 없음: 지표 수집 계정 생략"
+fi
