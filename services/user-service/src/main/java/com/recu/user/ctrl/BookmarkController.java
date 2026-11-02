@@ -25,7 +25,7 @@ public class BookmarkController {
 
   @PostMapping("/{postId}")
   public ResponseEntity<?> addBookmark(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId,
+      @RequestHeader(value = "userId", required = false) Long userId,
       @PathVariable("postId") Long postId) {
     validateUserId(userId);
     BookmarkResponseDTO result = bookmarkService.addBookmark(userId, postId);
@@ -34,7 +34,7 @@ public class BookmarkController {
 
   @GetMapping
   public ResponseEntity<?> getBookmark(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+      @RequestHeader(value = "userId", required = false) Long userId) {
     validateUserId(userId);
     Map<String, Object> result = bookmarkService.getBookmark(userId);
     return ResponseEntity.ok(result);
@@ -42,7 +42,7 @@ public class BookmarkController {
 
   @DeleteMapping("/{postId}")
   public ResponseEntity<?> deleteBookmark(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId,
+      @RequestHeader(value = "userId", required = false) Long userId,
       @PathVariable("postId") Long postId) {
     validateUserId(userId);
     bookmarkService.deleteBookmark(userId, postId);

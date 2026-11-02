@@ -39,7 +39,7 @@ public class AuthController {
 
   @PostMapping("/logout")
   public ResponseEntity<?> signOut(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId,
+      @RequestHeader(value = "userId", required = false) Long userId,
       @Valid @RequestBody UserLogoutRequestDTO request) {
     if (userId == null) {
       throw new BusinessException(ErrorCode.UNAUTHORIZED);

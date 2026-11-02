@@ -25,7 +25,7 @@ public class ProfileController {
 
   @PostMapping
   public ResponseEntity<?> setProfile(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId,
+      @RequestHeader(value = "userId", required = false) Long userId,
       @RequestBody ProfileRequestDTO request) {
     validateUserId(userId);
     ProfileResponseDTO response = profileService.setProfile(userId, request);
@@ -34,7 +34,7 @@ public class ProfileController {
 
   @GetMapping
   public ResponseEntity<?> getProfile(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId) {
+      @RequestHeader(value = "userId", required = false) Long userId) {
     validateUserId(userId);
     ProfileResponseDTO response = profileService.getProfile(userId);
     return ResponseEntity.status(HttpStatus.OK).body(response);
@@ -42,7 +42,7 @@ public class ProfileController {
 
   @PutMapping
   public ResponseEntity<?> updateProfile(
-      @RequestHeader(value = "X-User-Id", required = false) Long userId,
+      @RequestHeader(value = "userId", required = false) Long userId,
       @RequestBody ProfileRequestDTO request) {
     validateUserId(userId);
     ProfileResponseDTO response = profileService.updateProfile(userId, request);
