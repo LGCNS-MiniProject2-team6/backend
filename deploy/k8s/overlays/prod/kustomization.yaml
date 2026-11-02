@@ -5,6 +5,12 @@ resources:
   - namespace.yaml
   - ../../base
 configMapGenerator:
+  - name: bus-runtime
+    literals:
+      - BUS_ENABLED=true
+      - BUS_DESTINATION=recu-config-bus-prod
+      - KAFKA_BOOTSTRAP_SERVERS=kafka.recu-prod.svc.cluster.local:9092
+      - KAFKA_SECURITY_PROTOCOL=PLAINTEXT
   - name: kafka-broker
     envs:
       - kafka-broker.env
@@ -16,8 +22,6 @@ configMapGenerator:
       - CONFIG_GIT_URI=https://github.com/LGCNS-MiniProject2-team6/recu-config.git
       - CONFIG_GIT_LABEL=main
       - FRONTEND_ORIGIN=https://replace-with-prod-frontend-origin.invalid
-      - BUS_ENABLED=false
-      - BUS_DESTINATION=recu-config-bus-prod
 patches:
   - target:
       kind: Deployment
