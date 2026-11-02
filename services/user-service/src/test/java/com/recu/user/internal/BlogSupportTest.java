@@ -52,12 +52,16 @@ class BlogSupportTest {
     jdbc.execute(
         "CREATE TABLE IF NOT EXISTS user_skill(user_id bigint,tech_tag_id bigint,skill_type varchar(10))");
     jdbc.execute("CREATE TABLE IF NOT EXISTS bookmark(user_id bigint,blog_post_id bigint)");
-    for (String table : List.of("app_user", "user_job_field", "user_skill", "bookmark"))
+    for (String table : List.of("bookmark", "user_skill", "user_job_field", "app_user")) {
       jdbc.update("delete from " + table);
-    jdbc.update("insert into app_user values (7,2)");
-    jdbc.update("insert into user_job_field values (1,7,'Backend')");
-    jdbc.update("insert into user_skill values (7,10,'WANT'),(7,20,'HAVE')");
-    jdbc.update("insert into bookmark values (7,101),(8,102)");
+    }
+    jdbc.update(
+        "insert into app_user (user_id, google_sub, name, profile_version, role, created_at, updated_at) values (7, 'sub-7', 'tester-7', 2, 'USER', CURRENT_DATE, CURRENT_DATE), (8, 'sub-8', 'tester-8', 1, 'USER', CURRENT_DATE, CURRENT_DATE)");
+    jdbc.update("insert into user_job_field (id, user_id, job_field) values (1, 7, 'Backend')");
+    jdbc.update(
+        "insert into user_skill (tech_tag_id, user_id, skill_type) values (10, 7, 'WANT'), (20, 7, 'HAVE')");
+    jdbc.update(
+        "insert into bookmark (user_id, blog_post_id, created_at) values (7, 101, CURRENT_TIMESTAMP), (8, 102, CURRENT_TIMESTAMP)");
   }
 
   @Test

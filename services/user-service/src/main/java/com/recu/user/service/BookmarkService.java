@@ -1,7 +1,8 @@
 package com.recu.user.service;
 
 import com.recu.user.client.BlogServiceClient;
-import com.recu.user.client.BlogServiceClient.PostResponseDTO;
+import com.recu.user.client.BlogServiceClient.PostSummaryDTO;
+import com.recu.user.client.BlogServiceClient.PostSummaryResponse;
 import com.recu.user.common.exception.BusinessException;
 import com.recu.user.common.exception.ErrorCode;
 import com.recu.user.domain.dto.BookmarkResponseDTO;
@@ -13,6 +14,8 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
+
+  private static final int POST_LOOKUP_BATCH_SIZE = 200;
 
   private final BookmarkRepository bookmarkRepository;
   private final UserRepository userRepository;
@@ -61,13 +66,19 @@ public class BookmarkService {
     userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
     List<BookmarkEntity> bookmarks = bookmarkRepository.findByUser_UserId(userId);
-    List<BookmarkResponseDTO> responseList = new ArrayList<>();
+    if (bookmarks.isEmpty()) {
+      return Map.of("bookmarks", Collections.emptyList(), "count", 0);
+    }
 
+    List<Long> postIds = bookmarks.stream().map(BookmarkEntity::getBlogPostId).distinct().toList();
+
+    Map<Long, PostSummaryDTO> postMap = fetchPostSummariesSafe(postIds);
+
+    List<BookmarkResponseDTO> responseList = new ArrayList<>();
     for (BookmarkEntity bookmark : bookmarks) {
       Long postId = bookmark.getBlogPostId();
       OffsetDateTime savedAt = bookmark.getCreatedAt().atOffset(ZoneOffset.of("+09:00"));
-
-      PostResponseDTO post = fetchPostSafe(postId);
+      PostSummaryDTO post = postMap.get(postId);
 
       responseList.add(
           BookmarkResponseDTO.builder()
@@ -98,12 +109,23 @@ public class BookmarkService {
     bookmarkRepository.delete(bookmark);
   }
 
-  private PostResponseDTO fetchPostSafe(Long postId) {
-    try {
-      return blogServiceClient.getPost(postId);
-    } catch (Exception e) {
-      log.warn("Failed to fetch post #{} from blog-service: {}", postId, e.getMessage());
-      return null;
+  private Map<Long, PostSummaryDTO> fetchPostSummariesSafe(List<Long> postIds) {
+    Map<Long, PostSummaryDTO> posts = new HashMap<>();
+    for (int start = 0; start < postIds.size(); start += POST_LOOKUP_BATCH_SIZE) {
+      List<Long> batch =
+          postIds.subList(start, Math.min(start + POST_LOOKUP_BATCH_SIZE, postIds.size()));
+      try {
+        PostSummaryResponse response =
+            blogServiceClient.lookupPosts(new BlogServiceClient.PostIdsRequest(batch));
+        if (response != null && response.posts() != null) {
+          for (PostSummaryDTO post : response.posts()) {
+            posts.putIfAbsent(post.postId(), post);
+          }
+        }
+      } catch (Exception e) {
+        log.warn("Failed to lookup posts {} from blog-service: {}", batch, e.getMessage());
+      }
     }
+    return posts;
   }
 }

@@ -1,14 +1,18 @@
 package com.recu.user.common.exception;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
-@RestControllerAdvice
+@Order(Ordered.LOWEST_PRECEDENCE)
+@RestControllerAdvice(basePackages = {"com.recu.user.ctrl", "com.recu.user.service"})
 public class GlobalExceptionHandler {
 
   @ExceptionHandler(BusinessException.class)
@@ -16,6 +20,17 @@ public class GlobalExceptionHandler {
     ErrorCode errorCode = exception.getErrorCode();
     return ResponseEntity.status(errorCode.getStatus())
         .body(new ErrorResponse(errorCode.getCode(), errorCode.getMessage(), exception.getField()));
+  }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  public ResponseEntity<ErrorResponse> handleResponseStatusException(
+      ResponseStatusException exception) {
+    return ResponseEntity.status(exception.getStatusCode())
+        .body(
+            new ErrorResponse(
+                exception.getStatusCode().value() == 404 ? "NOT_FOUND" : "INVALID_INPUT",
+                exception.getReason() != null ? exception.getReason() : "요청을 처리할 수 없습니다.",
+                null));
   }
 
   @ExceptionHandler(MethodArgumentNotValidException.class)
