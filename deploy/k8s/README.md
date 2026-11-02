@@ -9,11 +9,12 @@
 base/                 환경 공통 리소스
   platform/           discovery/config/gateway
   services/           user/ai/blog
-  data/               Kafka (MariaDB·모니터링은 역할 3 추가 인계 후)
+  data/               Kafka, MariaDB
   ingress/            외부 Gateway 노출 예시(기본 배포 제외)
 overlays/dev/         recu-dev + dev 노드
 overlays/prod/        recu-prod + prod 노드
 overlays/*-kafka/     앱 이미지 없이 Kafka만 먼저 배포하는 overlay
+monitoring/           dev 전용 Prometheus, Grafana, exporter 배포 설정
 ```
 
 각 overlay는 `workload`와 `environment`를 함께 사용한다. 이미지 값은
@@ -35,8 +36,21 @@ config-server-secrets
   ENCRYPT_KEY
   CONFIG_ADMIN_USER, CONFIG_ADMIN_PASSWORD (관리 API 사용 시에만)
 
+config-metrics-credentials
+  CONFIG_METRICS_USER, CONFIG_METRICS_PASSWORD
+
 config-client-secrets
   CONFIG_USER, CONFIG_PASSWORD
+
+mariadb-secret
+  MARIADB_ROOT_PASSWORD
+  USER_DB_PASSWORD
+  AI_DB_PASSWORD
+  BLOG_DB_PASSWORD
+  EXPORTER_DB_PASSWORD (dev 모니터링을 사용할 때만)
+
+grafana-secret (recu-dev만)
+  GF_SECURITY_ADMIN_PASSWORD
 ```
 
 `ENCRYPT_KEY`, Config Git 토큰, 관리자 인증은 Config Server에만 주입한다.
@@ -63,11 +77,39 @@ kubectl apply -k deploy/k8s/overlays/dev-kafka
 kubectl -n recu-dev rollout status statefulset/kafka
 ```
 
+## MariaDB와 dev 모니터링
+
+`data/mariadb/`는 `junwooqkr5302/recu-mariadb:cd63175`를 사용한다. 한 MariaDB
+인스턴스 안에 `user_service`, `ai_service`, `blog_service` 논리 DB를 생성한다. 빈 PVC로
+처음 기동할 때만 초기화 스크립트가 실행되므로, `mariadb-secret`은 반드시 먼저 생성한다.
+
+Prometheus, Grafana, Kafka Exporter, MariaDB Exporter는 dev에만 배포한다. 설정 원본과
+배포 매니페스트를 같은 `monitoring/` Kustomize 루트에 두어 ConfigMap 파일을 복사하지
+않는다.
+
+```bash
+# MariaDB는 dev/prod 공통 base에 포함된다. 앱 이미지가 준비되기 전에는 아래처럼
+# 전체 overlay를 apply하지 말고, MariaDB 전용 overlay만 적용한다.
+kubectl apply -k deploy/k8s/overlays/dev-mariadb
+kubectl -n recu-dev rollout status statefulset/mariadb --timeout=5m
+
+# MariaDB가 Ready가 된 뒤 dev 모니터링을 배포한다.
+kubectl apply -k monitoring
+```
+
+Grafana와 Prometheus는 외부 공개하지 않는다. 확인이 필요할 때만 port-forward를 쓴다.
+
+```bash
+kubectl -n recu-dev port-forward svc/grafana 3000:3000
+kubectl -n recu-dev port-forward svc/prometheus 9090:9090
+```
+
 ## 검토 명령
 
 ```bash
 kubectl kustomize deploy/k8s/overlays/dev
 kubectl kustomize deploy/k8s/overlays/prod
+kubectl kustomize monitoring
 ```
 
 검토가 끝나고 실제 이미지/Secret이 준비된 뒤에만 apply 한다.

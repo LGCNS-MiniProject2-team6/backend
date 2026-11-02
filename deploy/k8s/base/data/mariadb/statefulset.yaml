@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: mariadb
+  labels:
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/component: data
+spec:
+  type: ClusterIP
+  selector:
+    app.kubernetes.io/name: mariadb
+  ports:
+    - name: mariadb
+      port: 3306
+      targetPort: mariadb
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mariadb
+  labels:
+    app.kubernetes.io/name: mariadb
+    app.kubernetes.io/component: data
+spec:
+  serviceName: mariadb
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: mariadb
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: mariadb
+        app.kubernetes.io/component: data
+    spec:
+      enableServiceLinks: false
+      nodeSelector:
+        workload: data
+      containers:
+        - name: mariadb
+          image: junwooqkr5302/recu-mariadb:cd63175
+          ports:
+            - name: mariadb
+              containerPort: 3306
+          envFrom:
+            - secretRef:
+                name: mariadb-secret
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+          startupProbe:
+            exec:
+              command:
+                - healthcheck.sh
+                - --connect
+                - --innodb_initialized
+            failureThreshold: 18
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - healthcheck.sh
+                - --connect
+                - --innodb_initialized
+            periodSeconds: 10
+            failureThreshold: 18
+          livenessProbe:
+            exec:
+              command:
+                - healthcheck.sh
+                - --connect
+            initialDelaySeconds: 60
+            periodSeconds: 15
+          resources:
+            requests:
+              cpu: 250m
+              memory: 512Mi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+  volumeClaimTemplates:
+    - metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        storageClassName: local-path
+        resources:
+          requests:
+            storage: 5Gi

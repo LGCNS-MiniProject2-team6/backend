@@ -24,7 +24,9 @@ public class ConfigSecurity {
       @Value("${spring.security.user.name}") String reader,
       @Value("${spring.security.user.password}") String readerPassword,
       @Value("${config.management.username}") String admin,
-      @Value("${config.management.password}") String adminPassword) {
+      @Value("${config.management.password}") String adminPassword,
+      @Value("${CONFIG_METRICS_USER:}") String metricsUser,
+      @Value("${CONFIG_METRICS_PASSWORD:}") String metricsPassword) {
     var encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
     List<UserDetails> users = new ArrayList<>();
     users.add(
@@ -46,6 +48,21 @@ public class ConfigSecurity {
               .roles("CONFIG_ADMIN", "CONFIG_READER")
               .build());
     }
+    if (metricsUser.isBlank() != metricsPassword.isBlank()) {
+      throw new IllegalArgumentException(
+          "CONFIG_METRICS_USER and CONFIG_METRICS_PASSWORD must be set together.");
+    }
+    if (!metricsUser.isBlank()) {
+      if (metricsUser.equals(reader) || metricsUser.equals(admin)) {
+        throw new IllegalArgumentException(
+            "Config metrics username must differ from reader/admin.");
+      }
+      users.add(
+          User.withUsername(metricsUser)
+              .password(encoder.encode(metricsPassword))
+              .roles("CONFIG_METRICS")
+              .build());
+    }
     return new InMemoryUserDetailsManager(users);
   }
 
@@ -59,6 +76,10 @@ public class ConfigSecurity {
             auth ->
                 auth.requestMatchers("/actuator/health", "/actuator/health/**")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/actuator/prometheus")
+                    .hasRole("CONFIG_METRICS")
+                    .requestMatchers("/actuator/prometheus/**")
+                    .denyAll()
                     .requestMatchers(
                         HttpMethod.POST, "/encrypt", "/decrypt", "/actuator/busrefresh")
                     .hasRole("CONFIG_ADMIN")

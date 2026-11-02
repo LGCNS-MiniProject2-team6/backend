@@ -98,26 +98,13 @@ kubectl -n recu-dev port-forward svc/prometheus 9090:9090
 # http://localhost:9090/targets 에서 kafka, mariadb UP
 ```
 
-## 역할 1 요청 (앱 지표)
+## 앱 지표 연동 (#50)
 
-현재 앱은 `micrometer-registry-prometheus` 의존성이 없고 actuator 노출이 `health,info`뿐이라 `spring-apps` 대상이 DOWN으로 보인다.
+앱 6개에 Prometheus registry와 Actuator 노출을 추가한다. Config Server는 전용 수집 계정으로 인증하며 별도 `spring-apps-config` job으로 수집한다. 동적 Eureka job에서는 Config를 제외한다.
 
-1. `platform/bus-support` (공통 모듈)에 의존성 추가
-   ```gradle
-   runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
-   ```
-   bus-support를 쓰지 않는 앱(discovery-server 등)은 각자 추가한다.
-2. recu-config 공통 설정에 노출 추가
-   ```yaml
-   management:
-     endpoints:
-       web:
-         exposure:
-           include: health,info,prometheus
-   ```
-3. Gateway 라우트로 `/actuator/**`가 외부에 열리지 않는지 확인한다. Prometheus는 Pod IP로 직접 수집한다.
+**배포 시 추가 작업:** Config에 CONFIG_METRICS_USER/PASSWORD를 주입하고, 같은 Secret을 Prometheus의 `/etc/prometheus/secrets/config-metrics`에 readOnly 디렉터리로 마운트한다. 키 이름은 CONFIG_METRICS_USER, CONFIG_METRICS_PASSWORD다. 미반영 시 Config target은 인증/파일 오류로 DOWN이 된다. 설정 읽기·관리자 계정을 지표 수집에 재사용하지 않는다.
 
-반영 후 Grafana `ReCu Spring Apps`에 앱별 HTTP·JVM·Hikari 지표가 나타난다.
+구체적인 Secret 계약, 접근 제한, 로컬 및 클러스터 검증은 [앱 지표 안내](../docs/PROMETHEUS_APP_GUIDE.md)를 따른다. 앱을 배포하지 않는 아래 Docker 검증에서는 앱 target의 DOWN을 허용한다.
 
 ## 로컬 검증
 

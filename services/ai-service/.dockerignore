@@ -1,0 +1,4 @@
+*
+!build/
+!build/libs/
+!build/libs/ai-service.jar
