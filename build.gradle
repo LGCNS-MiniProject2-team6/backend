@@ -94,3 +94,9 @@ tasks.named('test') {
         showStandardStreams = true   // 테스트가 찍는 값을 터미널에 그대로 보여준다
     }
 }
+
+subprojects {
+    tasks.withType(JavaCompile).configureEach {
+        options.encoding = 'UTF-8'
+    }
+}
