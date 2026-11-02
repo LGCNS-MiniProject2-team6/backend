@@ -20,7 +20,7 @@ spec:
         workload: service
       containers:
         - name: app
-          image: junwooqkr5302/recu-blogservice:b666914
+          image: junwooqkr5302/recu-blogservice:9075f1b
           ports:
             - name: http
               containerPort: 8084
