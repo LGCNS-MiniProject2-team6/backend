@@ -1,0 +1,20 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: recu-dev
+resources:
+  - k8s/workloads.yaml
+configMapGenerator:
+  - name: prometheus-config
+    files:
+      - prometheus.yml=prometheus/prometheus.yml
+  - name: grafana-datasources
+    files:
+      - prometheus.yml=grafana/provisioning/datasources/prometheus.yml
+  - name: grafana-dashboard-provider
+    files:
+      - recu.yml=grafana/provisioning/dashboards/recu.yml
+  - name: grafana-dashboards
+    files:
+      - kafka.json=grafana/dashboards/kafka.json
+      - mariadb.json=grafana/dashboards/mariadb.json
+      - spring-apps.json=grafana/dashboards/spring-apps.json

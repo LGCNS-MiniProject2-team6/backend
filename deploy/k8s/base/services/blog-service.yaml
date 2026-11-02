@@ -29,6 +29,8 @@ spec:
                 name: platform-runtime
             - configMapRef:
                 name: bus-runtime
+            - configMapRef:
+                name: db-runtime
           env:
             - name: SERVER_PORT
               value: "8084"
@@ -42,6 +44,11 @@ spec:
                 secretKeyRef:
                   name: config-client-secrets
                   key: CONFIG_PASSWORD
+            - name: BLOG_DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: BLOG_DB_PASSWORD
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
