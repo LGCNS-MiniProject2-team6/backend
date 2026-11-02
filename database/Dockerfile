@@ -3,6 +3,7 @@
 #   docker build -f database/Dockerfile -t recu-mariadb .
 # 비밀번호는 이미지에 넣지 않는다. 실행 시 환경변수로 주입한다.
 #   MARIADB_ROOT_PASSWORD, USER_DB_PASSWORD, AI_DB_PASSWORD, BLOG_DB_PASSWORD
+#   EXPORTER_DB_PASSWORD (선택, mysqld-exporter용)
 FROM mariadb:11.4
 
 COPY --chmod=644 database/conf/recu.cnf /etc/mysql/conf.d/recu.cnf

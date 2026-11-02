@@ -6,7 +6,7 @@ user·ai·blog 서비스의 DB를 한 MariaDB 인스턴스 안에서 분리(Data
 Dockerfile               mariadb:11.4 기반 이미지 (빌드 컨텍스트: 레포 루트)
 Dockerfile.dockerignore  빌드에 필요한 파일만 전송
 conf/recu.cnf            문자셋 utf8mb4, skip-name-resolve
-init/01-databases.sh     DB 3개 + 서비스 계정 3개 + 권한
+init/01-databases.sh     DB 3개 + 서비스 계정 3개 + 권한, 지표 수집 계정(선택)
 init/10-blog-schema.sql  blog_service 테이블 6개
 init/20-ai-schema.sql    ai_service.ai_guide
 scripts/verify-local.sh  로컬 Docker 검증
@@ -50,7 +50,7 @@ docker build -f database/Dockerfile -t <registry>/recu-mariadb:<tag> .
 | nodeSelector | `workload: data`, `environment: dev` | `workload: data`, `environment: prod` |
 | 포트 | 3306 | 동일 |
 | Service | `mariadb` ClusterIP, 3306 | 동일 |
-| Secret | `mariadb-secret` (아래 키 4개) | 동일 키, 값은 dev와 다르게 |
+| Secret | `mariadb-secret` (아래 키 4개 + 선택 1개) | 동일 키, 값은 dev와 다르게 |
 | PVC | `/var/lib/mysql`, 5Gi, `local-path` | 동일 |
 | 리소스 | requests cpu 250m / mem 512Mi, limits cpu 1 / mem 1Gi | 동일 |
 | readiness | exec `healthcheck.sh --connect --innodb_initialized` | 동일 |
@@ -64,15 +64,16 @@ Secret 키 (Pod에 `envFrom.secretRef`로 주입)
 | `USER_DB_PASSWORD` | `user_service` 계정 |
 | `AI_DB_PASSWORD` | `ai_service` 계정 |
 | `BLOG_DB_PASSWORD` | `blog_service` 계정 |
+| `EXPORTER_DB_PASSWORD` | (선택) `exporter` 계정. mysqld-exporter용, 서버 상태만 조회 (`monitoring/README.md`) |
 
 ```bash
 kubectl -n recu-dev create secret generic mariadb-secret \
   --from-literal=MARIADB_ROOT_PASSWORD=... \
   --from-literal=USER_DB_PASSWORD=... \
   --from-literal=AI_DB_PASSWORD=... \
-  --from-literal=BLOG_DB_PASSWORD=...
+  --from-literal=BLOG_DB_PASSWORD=... \n  --from-literal=EXPORTER_DB_PASSWORD=...
 ```
-값은 레포·채팅에 올리지 않는다. 하나라도 비어 있으면 최초 기동이 실패한다.
+값은 레포·채팅에 올리지 않는다. 필수 4개 중 하나라도 비어 있으면 최초 기동이 실패한다. `EXPORTER_DB_PASSWORD`가 없으면 `exporter` 계정만 생략한다.
 
 주의 사항
 
