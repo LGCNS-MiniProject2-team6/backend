@@ -43,6 +43,7 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/actuator/health/**",
                         "/actuator/info",
+                        "/actuator/prometheus",
                         "/swagger-ui/**",
                         "/v3/api-docs/**",
                         "/error")
