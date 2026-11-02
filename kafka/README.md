@@ -7,6 +7,7 @@ config/broker-dev.env    recu-dev 브로커 설정 (ConfigMap 원본)
 config/broker-prod.env   recu-prod 브로커 설정
 topics/topics.conf       환경별 토픽 목록
 topics/create-topics.sh  토픽 생성 (반복 실행 안전)
+topics/dlt.sh            DLT 조회·원본 토픽 재투입
 scripts/run-local.sh     IntelliJ 앱용 로컬 브로커 (localhost:9092)
 scripts/verify-local.sh  로컬 Docker 검증
 ```
@@ -70,6 +71,10 @@ Bus에 참여하는 다섯 앱(Config Server, Gateway, user, ai, blog)에 주입
 | 토픽 | 파티션 | 복제 | 보관 |
 |---|---:|---:|---|
 | `recu-config-bus-dev` / `-prod` / `-local` | 1 | 1 | 1일 |
+| `blog-post.requested.v1` | 3 | 1 | 7일 |
+| `blog-post.created.v1` | 3 | 1 | 7일 |
+| `blog-post.requested.v1-dlt` | 3 | 1 | 14일 |
+| `blog-post.created.v1-dlt` | 3 | 1 | 14일 |
 
 생성은 브로커 Pod 안에서 실행한다. 스크립트는 없으면 만들고, 있으면 건너뛰고, retention만 목록 값으로 맞춘다. 파티션 수가 다르면 경고만 하고 바꾸지 않는다.
 
@@ -80,7 +85,43 @@ kubectl -n recu-dev exec kafka-0 -- sh /tmp/topics/create-topics.sh dev
 
 **앱 배포 전에 실행한다.** 토픽이 없으면 Bus binder가 자동 생성하지 않아 다섯 앱이 기동에 실패한다.
 
-도메인 이벤트 토픽(Mock 외부 서버 → blog 요청, blog → user 완료, 각 DLT)은 백엔드 토픽명·Message Key 확정 후 `topics.conf`에 줄을 추가한다.
+## 도메인 이벤트 계약 (#61)
+
+블로그 도메인 토픽은 환경마다 브로커가 따로라 이름에 환경 접미사가 없다. 앱은 토픽을 만들지 않는다 (브로커 자동 생성도 꺼져 있음).
+
+| 토픽 | Producer | Consumer group | Message Key |
+|---|---|---|---|
+| `blog-post.requested.v1` | blog-service (외부 API/Webhook 수신 후 발행) | `blog-service` | 글 `url` |
+| `blog-post.created.v1` | blog-service (저장 성공 후 발행) | 알림 담당 서비스 (구축 시점에 확정) | `postId` |
+
+- 같은 Key는 항상 같은 파티션 → 같은 글의 이벤트는 순서대로 한 consumer가 처리한다
+- 메시지: JSON, 공통 필드 `eventId`, `eventType`, `eventVersion`, `occurredAt`(UTC), `source`, `data`
+- 중복: 같은 메시지가 다시 올 수 있다. blog는 `url` UNIQUE, 알림은 `eventId` 기준으로 한 번만 반영한다
+- 실패: `DefaultErrorHandler` 1s → 2s → 4s 3회 재시도 후 `DeadLetterPublishingRecoverer`가 `<원본>-dlt`로 보낸다 (Spring Kafka 3.3 기본 이름, 원본과 같은 파티션 번호). 역직렬화·검증 실패는 재시도 없이 바로 DLT
+- DLT 파티션 수는 원본과 같아야 한다. 원본 파티션을 늘리면 DLT도 같이 늘린다
+
+## DLT 재처리 절차
+
+DLT에 쌓인 메시지는 자동으로 다시 처리되지 않는다. 원인을 고친 뒤 사람이 재투입한다.
+
+1. **감지**: Grafana `ReCu Kafka`에서 `-dlt` 토픽 메시지 증가 확인
+2. **원인 확인**: 실패 헤더(`kafka_dlt-exception-message`, `kafka_dlt-original-offset` 등)와 본문 확인
+   ```bash
+   kubectl -n recu-dev cp kafka/topics kafka-0:/tmp/topics
+   kubectl -n recu-dev exec kafka-0 -- sh /tmp/topics/dlt.sh show blog-post.requested.v1-dlt
+   ```
+   `show`는 offset을 기록하지 않아 몇 번이든 실행해도 된다.
+3. **원인 수정**: 코드 버그면 수정 배포, 데이터 문제면 데이터 수정. 고치지 않고 재투입하면 다시 DLT로 온다
+4. **재투입**: 지난 재투입 이후 쌓인 메시지를 원본 토픽으로 다시 발행
+   ```bash
+   kubectl -n recu-dev exec kafka-0 -- sh /tmp/topics/dlt.sh replay blog-post.requested.v1-dlt
+   ```
+   - Key를 유지하므로 원본과 같은 파티션으로 들어간다. DLT 헤더는 떼고 보낸다
+   - consumer group `dlt-replay`로 위치를 기록해 같은 메시지를 두 번 보내지 않는다
+   - 소비자는 중복 처리(`url`, `eventId`)를 하므로 이미 반영된 메시지가 섞여도 결과는 한 번만 반영된다
+5. **확인**: Grafana에서 consumer lag 0, 해당 데이터 DB 반영 확인
+
+일부만 다시 보내야 하거나 재투입 위치를 되돌려야 하면 `kafka-consumer-groups.sh --group dlt-replay --reset-offsets`로 위치를 조정한 뒤 `replay`를 실행한다.
 
 ## IntelliJ 로컬 실행
 
@@ -105,7 +146,9 @@ bash kafka/scripts/verify-local.sh
 |---|---|
 | 1 | `broker-dev.env`로 단일 노드 KRaft 기동, `meta.properties`의 node.id |
 | 2 | `auto.create.topics.enable=false` |
-| 3 | `create-topics.sh local` 2회 실행 후 토픽 상태 동일, 파티션 1, retention 1일 |
+| 3 | `create-topics.sh local` 2회 실행 후 Bus 토픽 상태 동일, 파티션 1, retention 1일 |
 | 4 | advertised 주소(`kafka:9092`)로 produce/consume |
+| 5 | 도메인 토픽·DLT 4개 파티션 3, 보관 7일/14일, 같은 Key 3건이 같은 파티션 |
+| 6 | DLT 실패 헤더 조회, 재투입 시 같은 파티션·헤더 제거, 두 번째 재투입 0건 |
 
 K8s DNS 대신 컨테이너 hostname을 advertised 주소로 써서 bootstrap 이후 재접속 경로를 같은 방식으로 검증한다. 실제 클러스터 네트워크·노드 배치 검증은 역할 2 배포 후 진행한다.
