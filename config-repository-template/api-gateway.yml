@@ -12,7 +12,7 @@ spring:
         connect-timeout: 5000
         response-timeout: 10s
       default-filters:
-        - RemoveRequestHeader=X-User-Id
+        - RemoveRequestHeader=userId
         - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin, RETAIN_FIRST
       globalcors:
         add-to-simple-url-handler-mapping: true
@@ -24,22 +24,56 @@ spring:
             allowCredentials: true
             maxAge: 600
       routes:
+        - id: auth-logout
+          order: -20
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/logout
+            - Method=POST
+          filters:
+            - JwtValidation
+            - JwtUserId
         - id: auth
           uri: lb://user-service
           predicates:
             - Path=/api/auth,/api/auth/**
-        - id: user
+        - id: user-profile
           uri: lb://user-service
           predicates:
-            - Path=/api/profile,/api/profile/**,/api/bookmarks,/api/bookmarks/**,/api/notifications,/api/notifications/**
+            - Path=/api/profile
+            - Method=GET,POST,PUT
+          filters:
+            - JwtValidation
+            - JwtUserId
+        - id: user-bookmarks
+          uri: lb://user-service
+          predicates:
+            - Path=/api/bookmarks,/api/bookmarks/*
+            - Method=GET,POST,DELETE
+          filters:
+            - JwtValidation
+            - JwtUserId
         - id: ai-guide
           order: -10
           uri: lb://ai-service
           predicates:
             - Path=/api/posts/*/guide
+            - Method=POST
+          filters:
+            - JwtValidation
+            - JwtUserId
           metadata:
             connect-timeout: 5000
             response-timeout: 120000
+        - id: blog-user-context
+          order: -5
+          uri: lb://blog-service
+          predicates:
+            - Path=/api/posts/*,/api/companies,/api/companies/*/posts
+            - Method=GET
+          filters:
+            - JwtValidation
+            - JwtUserId
         - id: blog
           order: 0
           uri: lb://blog-service
