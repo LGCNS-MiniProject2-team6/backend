@@ -100,22 +100,24 @@ kubectl -n recu-dev port-forward svc/prometheus 9090:9090
 
 ## 역할 1 요청 (앱 지표)
 
-현재 앱은 `micrometer-registry-prometheus` 의존성이 없고 actuator 노출이 `health,info`뿐이라 `spring-apps` 대상이 DOWN으로 보인다.
+현재 앱 6개는 `micrometer-registry-prometheus` 의존성이 없고 actuator 노출이 `health,info`(config-server는 `+busrefresh`)뿐이라 `spring-apps` 대상이 DOWN으로 보인다.
 
-1. `platform/bus-support` (공통 모듈)에 의존성 추가
+1. `gradle/msa-common.gradle`에 의존성 추가 (actuator와 같은 위치, 앱 6개 공통 적용)
    ```gradle
    runtimeOnly 'io.micrometer:micrometer-registry-prometheus'
    ```
-   bus-support를 쓰지 않는 앱(discovery-server 등)은 각자 추가한다.
-2. recu-config 공통 설정에 노출 추가
+2. 각 앱 `application.yml`의 노출 목록에 `prometheus` 추가 (6개 모두)
    ```yaml
    management:
      endpoints:
        web:
          exposure:
-           include: health,info,prometheus
+           include: health,info,prometheus   # config-server는 health,info,busrefresh,prometheus
    ```
+   앱 yml에 `include`가 이미 있고 discovery-server는 Config 클라이언트가 아니므로 recu-config가 아닌 앱별 yml에서 수정한다.
 3. Gateway 라우트로 `/actuator/**`가 외부에 열리지 않는지 확인한다. Prometheus는 Pod IP로 직접 수집한다.
+
+로컬 확인: `curl -s localhost:8082/actuator/prometheus | grep -m3 http_server_requests` (8082는 user-service 예시)
 
 반영 후 Grafana `ReCu Spring Apps`에 앱별 HTTP·JVM·Hikari 지표가 나타난다.
 
