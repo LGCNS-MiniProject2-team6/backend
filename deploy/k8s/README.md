@@ -51,6 +51,17 @@ mariadb-secret
 
 grafana-secret (recu-dev만)
   GF_SECURITY_ADMIN_PASSWORD
+
+ai-secrets
+  GEMINI_API_KEY (ai-service 필수. 없으면 기동 실패)
+```
+
+`ai-secrets`는 ai-service에만 주입한다. 키 값이 명령 기록에 남지 않도록 아래처럼 만든다.
+
+```bash
+read -rs GEMINI_KEY   # 입력 내용이 화면에 표시되지 않음
+printf '%s' "$GEMINI_KEY" | sudo kubectl -n <namespace> create secret generic ai-secrets --from-file=GEMINI_API_KEY=/dev/stdin
+unset GEMINI_KEY
 ```
 
 `ENCRYPT_KEY`, Config Git 토큰, 관리자 인증은 Config Server에만 주입한다.
