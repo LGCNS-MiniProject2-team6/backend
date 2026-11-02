@@ -1,6 +1,7 @@
 package com.recu.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -54,7 +55,7 @@ class BookmarkApiTest {
                 .updatedAt(LocalDate.now())
                 .build());
 
-    given(blogServiceClient.getPost(eq(501L)))
+    given(blogServiceClient.getPost(eq(501L), any()))
         .willReturn(
             new BlogServiceClient.PostResponseDTO(
                 501L,
@@ -103,4 +104,3 @@ class BookmarkApiTest {
         .isFalse();
   }
 }
-

@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @FeignClient(name = "blog-service")
 public interface BlogServiceClient {
@@ -13,7 +14,8 @@ public interface BlogServiceClient {
   TechResponseDTO getTechTags();
 
   @GetMapping("/api/posts/{id}")
-  PostResponseDTO getPost(@PathVariable("id") Long id);
+  PostResponseDTO getPost(
+      @PathVariable("id") Long id, @RequestHeader(value = "userId", required = false) Long userId);
 
   record TechResponseDTO(List<TechTagDTO> techTags) {
     public record TechTagDTO(Long techTagId, String name, String field) {}

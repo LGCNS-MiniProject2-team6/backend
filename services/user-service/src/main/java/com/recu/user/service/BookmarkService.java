@@ -67,7 +67,7 @@ public class BookmarkService {
       Long postId = bookmark.getBlogPostId();
       OffsetDateTime savedAt = bookmark.getCreatedAt().atOffset(ZoneOffset.of("+09:00"));
 
-      PostResponseDTO post = fetchPostSafe(postId);
+      PostResponseDTO post = fetchPostSafe(postId, userId);
 
       responseList.add(
           BookmarkResponseDTO.builder()
@@ -98,9 +98,9 @@ public class BookmarkService {
     bookmarkRepository.delete(bookmark);
   }
 
-  private PostResponseDTO fetchPostSafe(Long postId) {
+  private PostResponseDTO fetchPostSafe(Long postId, Long userId) {
     try {
-      return blogServiceClient.getPost(postId);
+      return blogServiceClient.getPost(postId, userId);
     } catch (Exception e) {
       log.warn("Failed to fetch post #{} from blog-service: {}", postId, e.getMessage());
       return null;
