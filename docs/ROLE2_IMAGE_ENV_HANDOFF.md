@@ -84,8 +84,8 @@ Config Server와 클라이언트의 인증정보는 같은 환경 안에서 일�
 
 | 대상 | 현재 배포 파일의 DB 키 |
 |---|---|
-| 공통 `db-runtime` | `SPRING_DATASOURCE_URL`, `SPRING_DATASOURCE_DRIVER_CLASS_NAME`, `SPRING_DATASOURCE_USERNAME`, `DB_URL`, `DB_USER`, `BLOG_DB_URL`, `BLOG_DB_USER` |
-| User | `SPRING_DATASOURCE_PASSWORD` ← `mariadb-secret`의 `USER_DB_PASSWORD` |
+| 공통 `db-runtime` | `USER_DB_URL`, `USER_DB_USER`, `DB_URL`, `DB_USER`, `BLOG_DB_URL`, `BLOG_DB_USER` |
+| User | `DB_URL`/`DB_USER` ← `$(USER_DB_URL)`/`$(USER_DB_USER)` (env로 덮어씀), `DB_PASSWORD` ← `mariadb-secret`의 `USER_DB_PASSWORD` (#67) |
 | AI | `DB_PASSWORD` ← `mariadb-secret`의 `AI_DB_PASSWORD` |
 | Blog | `BLOG_DB_PASSWORD` ← `mariadb-secret`의 `BLOG_DB_PASSWORD` |
 
