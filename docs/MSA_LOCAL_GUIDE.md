@@ -17,13 +17,27 @@
 
 ## IntelliJ 실행
 
+처음 한 번(backend 루트, Windows는 Git Bash):
+
+```bash
+git clone https://github.com/LGCNS-MiniProject2-team6/recu-config.git ../recu-config
+bash scripts/local-setup.sh
+```
+
+- 첫 줄은 Config Server가 읽을 설정 저장소를 backend 옆에 받는다. 옆에 있으면 GitHub 토큰 없이 로컬 파일로 읽는다.
+- 둘째 줄은 로컬 전용 비밀값을 무작위로 만들어 .env.local* 파일(커밋 제외)에 저장하고, 팀 MariaDB 이미지와 Kafka를 Docker로 띄운다. 3306을 이미 쓰고 있으면 DB_PORT=3307을 앞에 붙인다.
+- 가이드 생성을 테스트하려면 .env.local.ai의 GEMINI_API_KEY를 본인 키로 바꾼다.
+- 옆 폴더 recu-config를 읽을 때 Config 로그의 `Could not fetch remote ... recu-config.git` WARN은 무시한다. 원격 fetch만 건너뛰고 로컬 파일로 동작한다. 최신 설정은 그 폴더에서 git pull 한다.
+
+실행:
+
 1. backend 루트를 열고 Gradle의 Reload All Gradle Projects를 실행한다. Project SDK와 Gradle JVM은 JDK 17을 선택한다.
-2. 기존 AuthServiceApplication 프로세스를 중지하고 Run Configuration/Compound에서 제거한다. UserServiceApplication을 유지한다.
-3. [Config 안내](CONFIG_SERVER_GUIDE.md)의 서버·클라이언트 변수를 각각의 Run → Edit Configurations → Environment variables에 넣는다. .env/.env.example은 자동으로 읽지 않는다.
-4. Eureka → Config 순서로 실행한다. Config에 ENCRYPT_KEY와 읽기/Git 인증이 있어야 한다. Started ConfigServerApplication과 8888의 health UP을 확인한다.
-5. User·AI·Blog와 Gateway를 실행한다. Config와 업무 앱을 동시에 시작하면 필수 설정 조회가 먼저 실패할 수 있다. 업무 앱과 Gateway 사이에는 필수 시작 순서가 없다.
-6. Kafka가 없으면 BUS_ENABLED=false를 유지한다. Kafka를 쓸 때는 [Bus 안내](SPRING_CLOUD_BUS_GUIDE.md)를 먼저 따른다.
-7. http://localhost:8761 에서 CONFIG-SERVER/API-GATEWAY/USER-SERVICE/AI-SERVICE/BLOG-SERVICE가 UP인지 확인한다. AUTH-SERVICE가 남으면 이전 앱을 중지하고 lease 정리를 기다린다.
+2. Run 목록의 `1. Platform (Eureka + Config)`를 실행하고 Started ConfigServerApplication을 확인한다. 실행 구성은 레포의 .run/에 있고 .env.local* 파일을 자동으로 읽는다. 환경변수를 직접 넣지 않는다.
+3. `2. Services (Gateway + User + AI + Blog)`를 실행한다. Config보다 먼저 시작하면 필수 설정 조회가 실패하므로 2번이 끝난 뒤 실행한다.
+4. 직접 만든 기존 Run Configuration(AuthServiceApplication, 환경변수 없는 UserServiceApplication 등)은 삭제한다.
+5. http://localhost:8761 에서 CONFIG-SERVER/API-GATEWAY/USER-SERVICE/AI-SERVICE/BLOG-SERVICE가 UP인지 확인한다. 기동 직후 1~2분은 Gateway 경유 호출이 503일 수 있다(Eureka 목록 갱신 전).
+6. 개발이 끝나면 `bash scripts/local-setup.sh down`, DB를 초기 데이터로 되돌리려면 `reset` 후 다시 실행한다.
+7. 변수 의미는 [Config 안내](CONFIG_SERVER_GUIDE.md), Kafka·Bus는 [Bus 안내](SPRING_CLOUD_BUS_GUIDE.md)를 본다.
 8. 각 앱의 /actuator/health, /actuator/health/liveness, /actuator/health/readiness와 /actuator/info를 확인한다. User의 config.service는 user-service다. 실제 비밀값을 info에 추가하지 않는다.
 
 인증 코드의 권장 위치는 com.recu.user.auth다. UserServiceApplication의 기본 스캔 루트는 com.recu.user이며 별도 com.recu.auth 최상위 패키지는 자동 포함되지 않는다.

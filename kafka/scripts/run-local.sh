@@ -19,20 +19,21 @@ if [ "${1:-}" = "stop" ]; then
 fi
 
 if docker ps --format '{{.Names}}' | grep -qx "$NAME"; then
+  # 이미 떠 있어도 토픽은 다시 맞춘다 (--if-not-exists라 기존 토픽은 그대로)
   echo "이미 실행 중: $NAME (localhost:9092)"
-  exit 0
-fi
-docker rm -f "$NAME" >/dev/null 2>&1 || true
+else
+  docker rm -f "$NAME" >/dev/null 2>&1 || true
 
-set --
-while IFS= read -r line; do
-  case "$line" in
-    '' | \#*) continue ;;
-    KAFKA_ADVERTISED_LISTENERS=*) line="KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092" ;;
-  esac
-  set -- "$@" -e "$line"
-done < "$ROOT/config/broker-dev.env"
-docker run -d --name "$NAME" -p 9092:9092 "$@" "$IMAGE" >/dev/null
+  set --
+  while IFS= read -r line; do
+    case "$line" in
+      '' | \#*) continue ;;
+      KAFKA_ADVERTISED_LISTENERS=*) line="KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092" ;;
+    esac
+    set -- "$@" -e "$line"
+  done < "$ROOT/config/broker-dev.env"
+  docker run -d --name "$NAME" -p 9092:9092 "$@" "$IMAGE" >/dev/null
+fi
 
 echo "브로커 준비 대기..."
 i=0
@@ -42,6 +43,7 @@ until docker exec "$NAME" /opt/kafka/bin/kafka-broker-api-versions.sh --bootstra
   sleep 2
 done
 
+docker exec -u 0 "$NAME" rm -rf /tmp/topics
 docker cp "$ROOT/topics" "$NAME:/tmp/topics" >/dev/null
 docker exec "$NAME" sh /tmp/topics/create-topics.sh local
 
