@@ -6,7 +6,7 @@ resources:
 configMapGenerator:
   - name: kafka-broker
     envs:
-      - ../../../../kafka/config/broker-dev.env
+      - kafka-broker.env
 patches:
   - target:
       kind: StatefulSet
