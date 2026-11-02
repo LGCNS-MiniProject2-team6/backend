@@ -1,0 +1,5 @@
+# 레포 루트 컨텍스트 중 이미지에 필요한 파일만 보낸다.
+*
+!database/conf
+!database/init
+!mini8-content-dump.sql

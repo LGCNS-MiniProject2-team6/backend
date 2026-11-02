@@ -1,5 +1,7 @@
 # mini8-backend
 
+**미니프로젝트2 MSA 전환 안내:** 현재 실행·Config·Gateway·암호화·Bus·배포 인계는 [docs 문서 목차](docs/README.md)를 참고하세요. 아래 내용은 기존 모놀리스 프로젝트의 기능·실행·배포 기록입니다.
+
 경력, 보유 기술, 관심 기술과 희망 직무를 기반으로 기술 블로그를 추천하고, 선택한 글을 사용자 수준에 맞게 읽을 수 있도록 AI 가이드를 제공하는 ReCu 백엔드 서버입니다.
 
 - 서비스: https://mini8-frontend.vercel.app

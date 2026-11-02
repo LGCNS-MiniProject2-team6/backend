@@ -1,27 +1,19 @@
-# recu-config 초기 템플릿
+# 중앙 설정 검증 fixture
 
-실행 애플리케이션 소스와 분리할 중앙 설정 Git 저장소의 초기 내용이다.
-이 디렉터리의 `*.yml`을 별도 저장소 루트로 복사하고 main 브랜치에 commit한다.
-여기에 중첩 `.git`을 만들지 않는다. 이 템플릿 폴더가 자동으로 원격 저장소가 되는 것은 아니다.
+운영 원천은 별도 Private [recu-config](https://github.com/LGCNS-MiniProject2-team6/recu-config)다. 이 폴더는 초기 예제와 자동 검증용 YAML이며 실행 앱이 직접 읽는 운영 설정이 아니다. 중첩 .git을 만들거나 실제 키·비밀번호·토큰을 넣지 않는다.
 
-- application.yml: 비밀 아닌 공통 설정과 설정 수신 확인용 info.config
-- application-{local,dev,prod}.yml: 환경 구분
-- {user,ai,blog}-service-{local,dev,prod}.yml: 서비스별 포트와 Eureka URL
-- bootstrap 정보인 Config 주소/인증/앱 이름/프로필은 각 앱이 먼저 가지고 있어야 한다.
-- DB와 외부 API 설정은 백엔드 계약 후 추가한다. 기존 모놀리스 비밀번호를 복사하지 않는다.
-- info에는 비밀값을 넣지 않는다. 서비스 /actuator/info는 이 공개 확인값만 반환한다.
-- 파일명이 다르거나 프로필이 잘못되면 공통 파일만 읽히는 경우가 있으므로 info.config.service/profile까지 확인한다.
+| 파일 | 용도 |
+|---|---|
+| application.yml | 비밀이 아닌 공통 설정·info.config·Bus demo 값 |
+| application-local/dev/prod.yml | 환경 구분·Bus 토픽 기본값 |
+| user/ai/blog-service-local/dev/prod.yml | 서비스별 포트·Eureka·관측 이름 |
+| api-gateway.yml 및 환경별 파일 | User/AI/Blog 라우팅·CORS |
 
-실행 및 별도 저장소 준비 순서는 docs/CONFIG_SERVER_GUIDE.md를 참고한다.
+인증은 User에 포함하므로 auth-service 전용 YAML은 없다. /api/auth/** 목적지는 user-service이며 User 포트는 8082다. demo.config-version은 갱신 검증값이고 info.config.version·Git commit SHA와 다르다. 실제 비밀값을 info에 넣지 않는다.
 
-운영 설정 원천은 별도 https://github.com/LGCNS-MiniProject2-team6/recu-config 저장소다. 이 템플릿은 초기 예제와 임시 Git 회귀 검증 fixture로 유지하며 자동 동기화되지 않는다. 원격 연결은 docs/REMOTE_CONFIG_GUIDE.md를 참고한다.
+- 설정 읽기/Git 인증·원격/후보 검증: [Config 안내](../docs/CONFIG_SERVER_GUIDE.md)
+- Gateway 경로·CORS: [Gateway 안내](../docs/GATEWAY_GUIDE.md)
+- 암호문 형식·키 관리: [암호화 안내](../docs/CONFIG_ENCRYPTION_GUIDE.md)
+- Kafka 주소·환경 토픽·갱신: [Bus 안내](../docs/SPRING_CLOUD_BUS_GUIDE.md)
 
-api-gateway.yml과 api-gateway-{local,dev,prod}.yml은 Gateway의 라우팅/CORS 검증 fixture다. dev/prod는 FRONTEND_ORIGIN을 명시해야 하며 자세한 내용은 docs/GATEWAY_GUIDE.md를 참고한다.
-
-## Kafka Bus (#15)
-
-공통 application.yml의 demo.config-version은 비밀이 아닌 갱신 확인 값이다. 환경별 application-{profile}.yml에는 local/dev/prod별 Bus 토픽 기본값을 둔다. 다섯 앱의 BUS_DESTINATION 환경변수는 반드시 동일 환경으로 맞추며 Config Server에도 주입한다. 공유 consumer group은 지정하지 않는다.
-
-Git push만으로 갱신되지 않으며 관리자 POST /actuator/busrefresh 한 번이 필요하다. 부팅·인증정보는 환경변수/Secret으로 유지한다. docs/SPRING_CLOUD_BUS_GUIDE.md 참고.
-
-#17부터 인증은 User에 포함된다. /api/auth/**도 lb://user-service로 연결하며 auth-service 전용 YAML은 제거했다. docs/AUTH_USER_COMBINE_GUIDE.md 참고.
+자동 검증은 임시 Git으로 복사해 일부 테스트 값을 변경한다. 실제 운영 변경은 recu-config PR로 반영한다. fixture와 원격은 자동 동기화되지 않으므로 계약 변경 시 함께 검토한다.

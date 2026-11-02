@@ -1,0 +1,49 @@
+# ReCu Prometheus 수집 설정 (recu-dev)
+# 대상 주소는 같은 Namespace의 Service 이름 기준이다.
+global:
+  scrape_interval: 30s
+  evaluation_interval: 30s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: [localhost:9090]
+
+  # Kafka 브로커·토픽·consumer group lag
+  - job_name: kafka
+    static_configs:
+      - targets: [kafka-exporter:9308]
+        labels:
+          service: kafka
+
+  # MariaDB 서버 상태 (연결 수, 쿼리, InnoDB)
+  - job_name: mariadb
+    static_configs:
+      - targets: [mysqld-exporter:9104]
+        labels:
+          service: mariadb
+
+  # Eureka 서버 자신 (Eureka에 등록하지 않으므로 고정 주소)
+  - job_name: spring-apps-static
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [discovery-server:8761]
+        labels:
+          application: discovery-server
+
+  # Eureka에 등록된 앱 전체 (Config, Gateway, user, ai, blog)
+  # 앱은 prefer-ip-address=true 로 Pod IP를 등록한다. K8s API 조회 권한(RBAC)이 필요 없다.
+  - job_name: spring-apps
+    metrics_path: /actuator/prometheus
+    eureka_sd_configs:
+      - server: http://discovery-server:8761/eureka
+        refresh_interval: 30s
+    relabel_configs:
+      - source_labels: [__meta_eureka_app_instance_ip_addr, __meta_eureka_app_instance_port]
+        separator: ':'
+        target_label: __address__
+      - source_labels: [__meta_eureka_app_name]
+        action: lowercase
+        target_label: application
+      - source_labels: [__meta_eureka_app_instance_instance_id]
+        target_label: instance
