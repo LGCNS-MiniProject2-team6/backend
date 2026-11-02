@@ -15,21 +15,19 @@ spring:
       username: ${CONFIG_USER:}
       password: ${CONFIG_PASSWORD:}
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:userdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER_CLASS_NAME:org.h2.Driver}
-    username: ${SPRING_DATASOURCE_USERNAME:sa}
-    password: ${SPRING_DATASOURCE_PASSWORD:}
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: org.mariadb.jdbc.Driver
   jpa:
+    open-in-view: false
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      ddl-auto: ${USER_JPA_HIBERNATE_DDL_AUTO:update}
     show-sql: true
     properties:
       hibernate:
         format_sql: true
+        dialect: org.hibernate.dialect.MariaDBDialect
 
 # Eureka/Probe 기본값은 독립 진단용이며 환경별 중앙 설정으로 덮어쓸 수 있다.
 eureka:
@@ -61,7 +59,7 @@ spring:
     import: configserver:${CONFIG_SERVER_URL:http://localhost:8888}
 
 ---
-# Config 연결 자체를 제외하는 로컬 장애 분리용 명시적 프로필
+# Config 연결 제외 및 독립 테스트용 프로필
 spring:
   config:
     activate:
@@ -69,3 +67,12 @@ spring:
   cloud:
     config:
       enabled: false
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:h2:mem:userdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=MariaDB}
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
