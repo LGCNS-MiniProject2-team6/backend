@@ -163,6 +163,9 @@ spec:
               subPath: prometheus.yml
             - name: data
               mountPath: /prometheus
+            - name: config-metrics-credentials
+              mountPath: /etc/prometheus/secrets/config-metrics
+              readOnly: true
           resources:
             requests:
               cpu: 100m
@@ -174,6 +177,14 @@ spec:
         - name: config
           configMap:
             name: prometheus-config
+        - name: config-metrics-credentials
+          secret:
+            secretName: config-server-secrets
+            items:
+              - key: CONFIG_METRICS_USER
+                path: CONFIG_METRICS_USER
+              - key: CONFIG_METRICS_PASSWORD
+                path: CONFIG_METRICS_PASSWORD
   volumeClaimTemplates:
     - metadata:
         name: data

@@ -69,6 +69,16 @@ spec:
                   name: config-server-secrets
                   key: CONFIG_ADMIN_PASSWORD
                   optional: true
+            - name: CONFIG_METRICS_USER
+              valueFrom:
+                secretKeyRef:
+                  name: config-server-secrets
+                  key: CONFIG_METRICS_USER
+            - name: CONFIG_METRICS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: config-server-secrets
+                  key: CONFIG_METRICS_PASSWORD
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
