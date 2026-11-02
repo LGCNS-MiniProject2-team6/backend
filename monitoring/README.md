@@ -57,7 +57,7 @@ ConfigMap은 `configMapGenerator`로 이 디렉터리 파일을 그대로 쓴다
 | 워크로드 | nodeSelector | requests | limits |
 |---|---|---|---|
 | prometheus | `workload: data`, `environment: dev` (PVC가 노드에 고정) | cpu 100m / mem 256Mi | cpu 500m / mem 512Mi |
-| grafana | 동일 | cpu 50m / mem 128Mi | cpu 250m / mem 256Mi |
+| grafana | 동일 | cpu 50m / mem 256Mi | cpu 250m / mem 512Mi (256Mi에서 OOMKilled, #73) |
 | kafka-exporter | 제한 없음 | cpu 10m / mem 32Mi | cpu 100m / mem 64Mi |
 | mysqld-exporter | 제한 없음 | cpu 10m / mem 32Mi | cpu 100m / mem 64Mi |
 
