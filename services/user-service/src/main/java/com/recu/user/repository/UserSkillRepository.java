@@ -5,12 +5,20 @@ import com.recu.user.domain.entity.UserSkillEntity;
 import com.recu.user.domain.entity.UserSkillPk;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserSkillRepository extends JpaRepository<UserSkillEntity, UserSkillPk> {
 
   List<UserSkillEntity> findByUser_UserId(Long userId);
+
+  @Query(
+      "select userSkill from UserSkillEntity userSkill "
+          + "where userSkill.user.userId = :userId "
+          + "order by userSkill.id.techTagId")
+  List<UserSkillEntity> findProfileSkillsByUserId(@Param("userId") Long userId);
 
   List<UserSkillEntity> findAllByUserAndSkillType(UserEntity user, String skillType);
 

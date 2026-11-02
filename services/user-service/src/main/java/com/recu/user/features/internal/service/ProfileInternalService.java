@@ -1,11 +1,12 @@
 package com.recu.user.features.internal.service;
 
 import com.recu.user.features.internal.domain.dto.ProfileResponseDTO;
-import com.recu.user.features.internal.domain.entity.AppUserEntity;
-import com.recu.user.features.internal.domain.entity.UserSkillEntity;
-import com.recu.user.features.internal.repository.AppUserRepository;
-import com.recu.user.features.internal.repository.UserJobFieldRepository;
-import com.recu.user.features.internal.repository.UserSkillRepository;
+import com.recu.user.domain.entity.UserEntity;
+import com.recu.user.domain.entity.UserJobFieldEntity;
+import com.recu.user.domain.entity.UserSkillEntity;
+import com.recu.user.repository.UserJobFieldRepository;
+import com.recu.user.repository.UserRepository;
+import com.recu.user.repository.UserSkillRepository;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,32 +16,32 @@ import org.springframework.web.server.ResponseStatusException;
 @Service
 public class ProfileInternalService {
 
-    private final AppUserRepository appUserRepository;
+    private final UserRepository userRepository;
     private final UserJobFieldRepository jobFieldRepository;
     private final UserSkillRepository userSkillRepository;
 
     public ProfileInternalService(
-            AppUserRepository appUserRepository,
+            UserRepository userRepository,
             UserJobFieldRepository jobFieldRepository,
             UserSkillRepository userSkillRepository) {
-        this.appUserRepository = appUserRepository;
+        this.userRepository = userRepository;
         this.jobFieldRepository = jobFieldRepository;
         this.userSkillRepository = userSkillRepository;
     }
 
     @Transactional(readOnly = true)
     public ProfileResponseDTO getProfile(Long userId) {
-        AppUserEntity user =
-                appUserRepository
+        UserEntity user =
+                userRepository
                         .findById(userId)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
 
         List<String> jobFields =
-                jobFieldRepository.findByUserId(userId).stream()
-                        .map(jobField -> jobField.getJobField())
+                jobFieldRepository.findProfileJobFieldsByUserId(userId).stream()
+                        .map(UserJobFieldEntity::getJobField)
                         .toList();
 
-        List<UserSkillEntity> skills = userSkillRepository.findProfileSkills(userId);
+        List<UserSkillEntity> skills = userSkillRepository.findProfileSkillsByUserId(userId);
         List<Long> haveTechTagIds =
                 skills.stream()
                         .filter(skill -> "HAVE".equalsIgnoreCase(skill.getSkillType()))

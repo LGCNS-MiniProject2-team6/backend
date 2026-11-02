@@ -27,7 +27,7 @@ public class SecurityConfig {
                                 "/actuator/info").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
                         .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
-                        .anyRequest().denyAll());
+                        .anyRequest().permitAll());
 
         return http.build();
     }
