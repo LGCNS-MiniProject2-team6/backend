@@ -1,0 +1,14 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Local - AI" type="Application" factoryName="Application">
+    <option name="envFilePaths">
+      <option value="$PROJECT_DIR$/.env.local" />
+      <option value="$PROJECT_DIR$/.env.local.ai" />
+    </option>
+    <option name="MAIN_CLASS_NAME" value="com.recu.ai.AiServiceApplication" />
+    <module name="backend.services.ai-service.main" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
