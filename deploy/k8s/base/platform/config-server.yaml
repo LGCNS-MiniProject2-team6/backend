@@ -72,12 +72,12 @@ spec:
             - name: CONFIG_METRICS_USER
               valueFrom:
                 secretKeyRef:
-                  name: config-server-secrets
+                  name: config-metrics-credentials
                   key: CONFIG_METRICS_USER
             - name: CONFIG_METRICS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: config-server-secrets
+                  name: config-metrics-credentials
                   key: CONFIG_METRICS_PASSWORD
           startupProbe:
             httpGet:
