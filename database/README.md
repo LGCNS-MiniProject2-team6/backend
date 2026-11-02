@@ -29,7 +29,7 @@ scripts/verify-local.sh  로컬 Docker 검증
 | `ai_service` | `ai_service` | `init/20-ai-schema.sql` | `none` |
 | `blog_service` | `blog_service` | `init/10-blog-schema.sql` + 덤프 데이터 | `validate` |
 
-DB 이름은 ai-service 코드의 `${DB_URL}/ai_service`에 맞춰 `*_service`로 통일했다.
+DB 이름은 서비스별 DB를 구분하려고 `*_service`로 통일했다.
 
 ## 역할 4 빌드
 
@@ -94,7 +94,7 @@ DB 환경변수 이름이 서비스마다 다르다. 각 서비스 코드 기준
 | | `SPRING_DATASOURCE_DRIVER_CLASS_NAME` | `org.mariadb.jdbc.Driver` (기본값이 H2라 필수) |
 | | `SPRING_DATASOURCE_USERNAME` | `user_service` |
 | | `SPRING_DATASOURCE_PASSWORD` | Secret `USER_DB_PASSWORD` |
-| ai | `DB_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306` (**DB 이름 없이**, 코드가 `/ai_service`를 붙임) |
+| ai | `DB_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/ai_service` (DB 이름 포함. ai-service 코드는 `${DB_URL}`을 그대로 사용) |
 | | `DB_USER` | `ai_service` |
 | | `DB_PASSWORD` | Secret `AI_DB_PASSWORD` |
 | blog | `BLOG_DB_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/blog_service` |
