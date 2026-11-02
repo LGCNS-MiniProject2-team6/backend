@@ -55,8 +55,7 @@ class BlogPostCreatedConsumerTest {
             .build();
     userRepository.save(user);
 
-    userJobFieldRepository.save(
-        UserJobFieldEntity.builder().user(user).jobField("백엔드").build());
+    userJobFieldRepository.save(UserJobFieldEntity.builder().user(user).jobField("백엔드").build());
 
     userSkillRepository.save(
         UserSkillEntity.builder()
@@ -75,12 +74,7 @@ class BlogPostCreatedConsumerTest {
 
     EventEnvelope<BlogPostCreatedData> envelope =
         new EventEnvelope<>(
-            "event-uuid-001",
-            "BLOG_POST_CREATED",
-            1,
-            Instant.now(),
-            "blog-service",
-            data);
+            "event-uuid-001", "BLOG_POST_CREATED", 1, Instant.now(), "blog-service", data);
 
     String json = objectMapper.writeValueAsString(envelope);
     ConsumerRecord<String, Object> record =
@@ -107,12 +101,7 @@ class BlogPostCreatedConsumerTest {
 
     EventEnvelope<BlogPostCreatedData> envelope =
         new EventEnvelope<>(
-            "event-uuid-002",
-            "BLOG_POST_CREATED",
-            1,
-            Instant.now(),
-            "blog-service",
-            data);
+            "event-uuid-002", "BLOG_POST_CREATED", 1, Instant.now(), "blog-service", data);
 
     String json = objectMapper.writeValueAsString(envelope);
     ConsumerRecord<String, Object> record1 =
@@ -128,4 +117,3 @@ class BlogPostCreatedConsumerTest {
     assertThat(notifications).hasSize(1);
   }
 }
-

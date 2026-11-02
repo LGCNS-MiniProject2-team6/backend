@@ -10,4 +10,3 @@ public record BlogPostCreatedData(
     List<Long> techTagIds,
     String field,
     String companyName) {}
-

@@ -63,9 +63,11 @@ public class NotificationService {
                   .isRead(false)
                   .build();
           notificationRepository.save(notification);
-          log.info("사용자 알림 생성 완료: userId={}, eventId={}, postId={}", user.getUserId(), eventId, postId);
+          log.info(
+              "사용자 알림 생성 완료: userId={}, eventId={}, postId={}", user.getUserId(), eventId, postId);
         } catch (DataIntegrityViolationException e) {
-          log.info("중복 알림 방지 처리 (Unique 제약 위반 skip): userId={}, eventId={}", user.getUserId(), eventId);
+          log.info(
+              "중복 알림 방지 처리 (Unique 제약 위반 skip): userId={}, eventId={}", user.getUserId(), eventId);
         }
       }
     }
@@ -84,7 +86,10 @@ public class NotificationService {
     if (blogField != null && !blogField.isBlank()) {
       boolean fieldMatched =
           userJobFields.stream()
-              .anyMatch(jf -> jf.getJobField() != null && jf.getJobField().equalsIgnoreCase(blogField.trim()));
+              .anyMatch(
+                  jf ->
+                      jf.getJobField() != null
+                          && jf.getJobField().equalsIgnoreCase(blogField.trim()));
       if (fieldMatched) {
         return true;
       }
@@ -108,4 +113,3 @@ public class NotificationService {
     return false;
   }
 }
-

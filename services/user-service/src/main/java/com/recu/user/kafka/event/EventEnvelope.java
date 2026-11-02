@@ -9,4 +9,3 @@ public record EventEnvelope<T>(
     Instant occurredAt,
     String source,
     T data) {}
-

@@ -11,14 +11,14 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/internal/users")
 public class ProfileInternalController {
 
-    private final ProfileInternalService profileInternalService;
+  private final ProfileInternalService profileInternalService;
 
-    public ProfileInternalController(ProfileInternalService profileInternalService) {
-        this.profileInternalService = profileInternalService;
-    }
+  public ProfileInternalController(ProfileInternalService profileInternalService) {
+    this.profileInternalService = profileInternalService;
+  }
 
-    @GetMapping("/{userId}")
-    public ProfileResponseDTO getProfile(@PathVariable Long userId) {
-        return profileInternalService.getProfile(userId);
-    }
+  @GetMapping("/{userId}")
+  public ProfileResponseDTO getProfile(@PathVariable Long userId) {
+    return profileInternalService.getProfile(userId);
+  }
 }
