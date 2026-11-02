@@ -20,7 +20,7 @@ spec:
         workload: platform
       containers:
         - name: app
-          image: registry.invalid/recu/api-gateway:replace-me
+          image: junwooqkr5302/recu-apigateway:b666914
           ports:
             - name: http
               containerPort: 8080

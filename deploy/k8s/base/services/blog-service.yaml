@@ -20,7 +20,7 @@ spec:
         workload: service
       containers:
         - name: app
-          image: registry.invalid/recu/blog-service:replace-me
+          image: junwooqkr5302/recu-blogservice:b666914
           ports:
             - name: http
               containerPort: 8084

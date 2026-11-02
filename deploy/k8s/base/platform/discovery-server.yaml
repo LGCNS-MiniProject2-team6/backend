@@ -20,7 +20,7 @@ spec:
         workload: platform
       containers:
         - name: app
-          image: registry.invalid/recu/discovery-server:replace-me
+          image: junwooqkr5302/recu-discoveryserver:b666914
           ports:
             - name: http
               containerPort: 8761

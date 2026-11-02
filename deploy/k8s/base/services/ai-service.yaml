@@ -20,7 +20,7 @@ spec:
         workload: service
       containers:
         - name: app
-          image: registry.invalid/recu/ai-service:replace-me
+          image: junwooqkr5302/recu-aiservice:b666914
           ports:
             - name: http
               containerPort: 8083
