@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: recu-dev
+resources:
+  - namespace.yaml
+  - ../../base
+configMapGenerator:
+  - name: kafka-broker
+    envs:
+      - ../../../kafka/config/broker-dev.env
+  - name: platform-runtime
+    literals:
+      - SPRING_PROFILES_ACTIVE=dev
+      - EUREKA_URL=http://discovery-server:8761/eureka/
+      - CONFIG_SERVER_URL=http://config-server:8888
+      - CONFIG_GIT_URI=https://github.com/LGCNS-MiniProject2-team6/recu-config.git
+      - CONFIG_GIT_LABEL=main
+      - FRONTEND_ORIGIN=https://replace-with-dev-frontend-origin.invalid
+      - BUS_ENABLED=false
+      - BUS_DESTINATION=recu-config-bus-dev
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: ignored-by-target-selector
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              environment: dev
