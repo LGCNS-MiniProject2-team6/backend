@@ -76,7 +76,7 @@ kubectl -n recu-dev rollout status statefulset/kafka
 
 ## MariaDB와 dev 모니터링
 
-`data/mariadb.yaml`은 `junwooqkr5302/recu-mariadb:cd63175`를 사용한다. 한 MariaDB
+`data/mariadb/`는 `junwooqkr5302/recu-mariadb:cd63175`를 사용한다. 한 MariaDB
 인스턴스 안에 `user_service`, `ai_service`, `blog_service` 논리 DB를 생성한다. 빈 PVC로
 처음 기동할 때만 초기화 스크립트가 실행되므로, `mariadb-secret`은 반드시 먼저 생성한다.
 
