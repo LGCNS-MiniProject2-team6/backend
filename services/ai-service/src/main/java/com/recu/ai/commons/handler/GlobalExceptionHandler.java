@@ -10,6 +10,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.bind.MissingRequestHeaderException;
 
 @Slf4j
 @RestControllerAdvice
@@ -31,6 +32,12 @@ public class GlobalExceptionHandler {
                         .map(FieldError::getField)
                         .orElse(null);
         return errorResponse(ErrorCode.INVALID_INPUT, field);
+    }
+
+    @ExceptionHandler(MissingRequestHeaderException.class)
+    public ResponseEntity<ErrorResponse> handleMissingRequestHeader(
+            MissingRequestHeaderException exception) {
+        return errorResponse(ErrorCode.UNAUTHORIZED, exception.getHeaderName());
     }
 
     @ExceptionHandler(Exception.class)

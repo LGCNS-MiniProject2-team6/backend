@@ -1,5 +1,6 @@
 package com.recu.ai.commons.config;
 
+import jakarta.servlet.DispatcherType;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -21,9 +22,11 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/internal/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/posts/*/guide").permitAll()
-                        .requestMatchers("/actuator/health", "/actuator/info").permitAll()
+                        .requestMatchers("/actuator/health",
+                                "/actuator/health/**",
+                                "/actuator/info").permitAll()
                         .requestMatchers("/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**").permitAll()
+                        .dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
                         .anyRequest().denyAll());
 
         return http.build();
