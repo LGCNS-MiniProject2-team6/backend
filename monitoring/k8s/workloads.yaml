@@ -179,7 +179,7 @@ spec:
             name: prometheus-config
         - name: config-metrics-credentials
           secret:
-            secretName: config-server-secrets
+            secretName: config-metrics-credentials
             items:
               - key: CONFIG_METRICS_USER
                 path: CONFIG_METRICS_USER
