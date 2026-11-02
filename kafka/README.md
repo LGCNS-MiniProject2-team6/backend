@@ -7,6 +7,7 @@ config/broker-dev.env    recu-dev 브로커 설정 (ConfigMap 원본)
 config/broker-prod.env   recu-prod 브로커 설정
 topics/topics.conf       환경별 토픽 목록
 topics/create-topics.sh  토픽 생성 (반복 실행 안전)
+scripts/run-local.sh     IntelliJ 앱용 로컬 브로커 (localhost:9092)
 scripts/verify-local.sh  로컬 Docker 검증
 ```
 
@@ -80,6 +81,17 @@ kubectl -n recu-dev exec kafka-0 -- sh /tmp/topics/create-topics.sh dev
 **앱 배포 전에 실행한다.** 토픽이 없으면 Bus binder가 자동 생성하지 않아 다섯 앱이 기동에 실패한다.
 
 도메인 이벤트 토픽(Mock 외부 서버 → blog 요청, blog → user 완료, 각 DLT)은 백엔드 토픽명·Message Key 확정 후 `topics.conf`에 줄을 추가한다.
+
+## IntelliJ 로컬 실행
+
+`docs/SPRING_CLOUD_BUS_GUIDE.md` 2장의 테스트 Kafka(`LocalKafkaBroker`) 대신 이 브로커를 쓸 수 있다.
+
+```bash
+bash kafka/scripts/run-local.sh        # 시작 + recu-config-bus-local 생성
+bash kafka/scripts/run-local.sh stop   # 중지 (데이터 삭제)
+```
+
+다섯 앱 실행 구성 환경변수에 `BUS_ENABLED=true;BUS_DESTINATION=recu-config-bus-local;KAFKA_BOOTSTRAP_SERVERS=localhost:9092`를 추가한다. 이후 절차는 가이드 2장과 같다.
 
 ## 로컬 검증
 
