@@ -44,7 +44,7 @@ spec:
                 secretKeyRef:
                   name: config-client-secrets
                   key: CONFIG_PASSWORD
-            # db-runtime??DB_URL/DB_USER??ai?�이므�?user 값으�???��?�다 (env가 envFrom보다 ?�선).
+            # db-runtime의 DB_URL/DB_USER는 ai용이므로 user 값으로 덮어쓴다 (env가 envFrom보다 우선).
             - name: DB_URL
               value: $(USER_DB_URL)
             - name: DB_USER
