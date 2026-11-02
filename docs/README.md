@@ -53,3 +53,7 @@ Auth·User 통합 과정과 과거 4개 서비스 검증 기록은 Git 이력에
 | services/user-service/README.md | 삭제된 안내 링크를 현재 로컬 안내로 교체하고 키 주입 대상 명확화 |
 
 검사 범위는 Markdown 내부 링크·코드 블록·CLI 옵션·서비스/포트/키/Bus 기본값 계약이다. 문서 변경에 대해 앱 통합 테스트를 새로 실행하거나 클라우드 적용 완료를 주장하지 않는다.
+
+## Prometheus 앱 지표 인계 (#50)
+
+[앱 지표 안내](PROMETHEUS_APP_GUIDE.md)에 앱 6개 노출, Config 전용 지표 Secret·Prometheus 마운트, 이미지 재빌드 및 외부 관리 경로 차단 조건을 정리했다.
