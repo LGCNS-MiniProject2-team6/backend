@@ -90,16 +90,18 @@ DB 환경변수 이름이 서비스마다 다르다. 각 서비스 코드 기준
 
 | 서비스 | 환경변수 | recu-dev 값 |
 |---|---|---|
-| user | `SPRING_DATASOURCE_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/user_service` |
-| | `SPRING_DATASOURCE_DRIVER_CLASS_NAME` | `org.mariadb.jdbc.Driver` (기본값이 H2라 필수) |
-| | `SPRING_DATASOURCE_USERNAME` | `user_service` |
-| | `SPRING_DATASOURCE_PASSWORD` | Secret `USER_DB_PASSWORD` |
+| user | `USER_DB_URL` → Pod `DB_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/user_service` |
+| | `USER_DB_USER` → Pod `DB_USER` | `user_service` |
+| | `DB_PASSWORD` | Secret `USER_DB_PASSWORD` |
 | ai | `DB_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/ai_service` (DB 이름 포함. ai-service 코드는 `${DB_URL}`을 그대로 사용) |
 | | `DB_USER` | `ai_service` |
 | | `DB_PASSWORD` | Secret `AI_DB_PASSWORD` |
 | blog | `BLOG_DB_URL` | `jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/blog_service` |
 | | `BLOG_DB_USER` | `blog_service` |
 | | `BLOG_DB_PASSWORD` | Secret `BLOG_DB_PASSWORD` |
+
+user와 ai는 같은 변수 이름(`DB_URL`/`DB_USER`/`DB_PASSWORD`)을 쓴다. 공용 `db-runtime` ConfigMap의 `DB_URL`/`DB_USER`는 ai 값이고, user는 `user-service` Deployment의 `env`에서 `$(USER_DB_URL)`/`$(USER_DB_USER)`로 덮어쓴다(`env`가 `envFrom`보다 우선).
+`SPRING_DATASOURCE_*`는 `db-runtime`에 넣지 않는다. 모든 서비스의 yml 값보다 우선 적용되어 blog·ai가 user 계정으로 접속하게 된다(#67).
 
 기준 브랜치: user `feat/24/user-service-api`, ai `refactor/1/ai-service`, blog `refactor/26/blog-service-separation`. 머지 후 변수명이 바뀌면 이 표를 갱신한다.
 

@@ -7,9 +7,8 @@ resources:
 configMapGenerator:
   - name: db-runtime
     literals:
-      - SPRING_DATASOURCE_URL=jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/user_service
-      - SPRING_DATASOURCE_DRIVER_CLASS_NAME=org.mariadb.jdbc.Driver
-      - SPRING_DATASOURCE_USERNAME=user_service
+      - USER_DB_URL=jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/user_service
+      - USER_DB_USER=user_service
       - DB_URL=jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/ai_service
       - DB_USER=ai_service
       - BLOG_DB_URL=jdbc:mariadb://mariadb.recu-dev.svc.cluster.local:3306/blog_service
