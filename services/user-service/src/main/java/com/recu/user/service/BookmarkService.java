@@ -15,10 +15,9 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -28,6 +27,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 public class BookmarkService {
+
+  private static final int POST_LOOKUP_BATCH_SIZE = 200;
 
   private final BookmarkRepository bookmarkRepository;
   private final UserRepository userRepository;
@@ -109,16 +110,22 @@ public class BookmarkService {
   }
 
   private Map<Long, PostSummaryDTO> fetchPostSummariesSafe(List<Long> postIds) {
-    try {
-      PostSummaryResponse response =
-          blogServiceClient.lookupPosts(new BlogServiceClient.PostIdsRequest(postIds));
-      if (response != null && response.posts() != null) {
-        return response.posts().stream()
-            .collect(Collectors.toMap(PostSummaryDTO::postId, Function.identity(), (p1, p2) -> p1));
+    Map<Long, PostSummaryDTO> posts = new HashMap<>();
+    for (int start = 0; start < postIds.size(); start += POST_LOOKUP_BATCH_SIZE) {
+      List<Long> batch =
+          postIds.subList(start, Math.min(start + POST_LOOKUP_BATCH_SIZE, postIds.size()));
+      try {
+        PostSummaryResponse response =
+            blogServiceClient.lookupPosts(new BlogServiceClient.PostIdsRequest(batch));
+        if (response != null && response.posts() != null) {
+          for (PostSummaryDTO post : response.posts()) {
+            posts.putIfAbsent(post.postId(), post);
+          }
+        }
+      } catch (Exception e) {
+        log.warn("Failed to lookup posts {} from blog-service: {}", batch, e.getMessage());
       }
-    } catch (Exception e) {
-      log.warn("Failed to lookup posts {} from blog-service: {}", postIds, e.getMessage());
     }
-    return Collections.emptyMap();
+    return posts;
   }
 }

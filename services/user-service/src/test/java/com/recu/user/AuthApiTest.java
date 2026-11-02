@@ -119,4 +119,3 @@ class AuthApiTest {
     assertThat(afterUser.getRefreshToken()).isNull();
   }
 }
-

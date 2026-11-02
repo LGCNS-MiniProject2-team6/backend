@@ -120,4 +120,3 @@ class ProfileApiTest {
     assertThat(updatedUser.getProfileVersion()).isEqualTo(2);
   }
 }
-
