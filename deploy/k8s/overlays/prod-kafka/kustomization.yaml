@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: recu-prod
+resources:
+  - ../../base/data
+configMapGenerator:
+  - name: kafka-broker
+    envs:
+      - ../../../../kafka/config/broker-prod.env
+patches:
+  - target:
+      kind: StatefulSet
+      name: kafka
+    patch: |-
+      apiVersion: apps/v1
+      kind: StatefulSet
+      metadata:
+        name: kafka
+      spec:
+        template:
+          spec:
+            nodeSelector:
+              environment: prod
