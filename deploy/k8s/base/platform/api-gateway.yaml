@@ -27,6 +27,8 @@ spec:
           envFrom:
             - configMapRef:
                 name: platform-runtime
+            - configMapRef:
+                name: bus-runtime
           env:
             - name: SERVER_PORT
               value: "8080"

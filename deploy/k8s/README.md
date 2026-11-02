@@ -40,7 +40,9 @@ config-client-secrets
 ```
 
 `ENCRYPT_KEY`, Config Git 토큰, 관리자 인증은 Config Server에만 주입한다.
-Gateway와 업무 서비스에는 `config-client-secrets`만 주입한다.
+Gateway와 업무 서비스에는 `config-client-secrets`만 주입한다. Spring Cloud Bus 값은
+`bus-runtime` ConfigMap으로 Config/Gateway/User/AI/Blog에만 주입하며, Eureka에는
+주입하지 않는다.
 
 ## Kafka
 
