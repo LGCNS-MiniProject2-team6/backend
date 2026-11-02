@@ -7,7 +7,7 @@ resources:
 configMapGenerator:
   - name: kafka-broker
     envs:
-      - ../../../kafka/config/broker-dev.env
+      - kafka-broker.env
   - name: platform-runtime
     literals:
       - SPRING_PROFILES_ACTIVE=dev

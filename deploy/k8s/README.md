@@ -49,6 +49,9 @@ ConfigMap은 `kafka/config/broker-<env>.env`에서 생성되며, `kafka` Statefu
 각 환경의 `workload=data` 노드에서만 실행된다. `enableServiceLinks: false`는
 `apache/kafka` 이미지에 필수다.
 
+Kustomize는 overlay 바깥의 env 파일을 읽지 못하므로, 각 overlay에 같은 환경의
+`kafka-broker.env` 사본을 둔다. Kafka 원본 설정을 바꿀 때는 해당 사본도 같이 갱신한다.
+
 Kafka를 먼저 배포하고 Ready가 되면 역할 3이 Bus 토픽을 생성한다. 토픽 생성 전에는
 앱을 배포하거나 `BUS_ENABLED=true`로 바꾸지 않는다.
 
