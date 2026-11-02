@@ -53,6 +53,11 @@ spring:
           filters:
             - JwtValidation
             - JwtUserId
+        - id: user-other
+          order: 10
+          uri: lb://user-service
+          predicates:
+            - Path=/api/profile/**,/api/bookmarks/**,/api/notifications,/api/notifications/**
         - id: ai-guide
           order: -10
           uri: lb://ai-service
