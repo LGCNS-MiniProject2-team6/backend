@@ -1,7 +1,8 @@
 package com.recu.user.service;
 
 import com.recu.user.client.BlogServiceClient;
-import com.recu.user.client.BlogServiceClient.PostResponseDTO;
+import com.recu.user.client.BlogServiceClient.PostSummaryDTO;
+import com.recu.user.client.BlogServiceClient.PostSummaryResponse;
 import com.recu.user.common.exception.BusinessException;
 import com.recu.user.common.exception.ErrorCode;
 import com.recu.user.domain.dto.BookmarkResponseDTO;
@@ -13,8 +14,11 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -61,13 +65,19 @@ public class BookmarkService {
     userRepository.findById(userId).orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
 
     List<BookmarkEntity> bookmarks = bookmarkRepository.findByUser_UserId(userId);
-    List<BookmarkResponseDTO> responseList = new ArrayList<>();
+    if (bookmarks.isEmpty()) {
+      return Map.of("bookmarks", Collections.emptyList(), "count", 0);
+    }
 
+    List<Long> postIds = bookmarks.stream().map(BookmarkEntity::getBlogPostId).distinct().toList();
+
+    Map<Long, PostSummaryDTO> postMap = fetchPostSummariesSafe(postIds);
+
+    List<BookmarkResponseDTO> responseList = new ArrayList<>();
     for (BookmarkEntity bookmark : bookmarks) {
       Long postId = bookmark.getBlogPostId();
       OffsetDateTime savedAt = bookmark.getCreatedAt().atOffset(ZoneOffset.of("+09:00"));
-
-      PostResponseDTO post = fetchPostSafe(postId, userId);
+      PostSummaryDTO post = postMap.get(postId);
 
       responseList.add(
           BookmarkResponseDTO.builder()
@@ -98,12 +108,17 @@ public class BookmarkService {
     bookmarkRepository.delete(bookmark);
   }
 
-  private PostResponseDTO fetchPostSafe(Long postId, Long userId) {
+  private Map<Long, PostSummaryDTO> fetchPostSummariesSafe(List<Long> postIds) {
     try {
-      return blogServiceClient.getPost(postId, userId);
+      PostSummaryResponse response =
+          blogServiceClient.lookupPosts(new BlogServiceClient.PostIdsRequest(postIds));
+      if (response != null && response.posts() != null) {
+        return response.posts().stream()
+            .collect(Collectors.toMap(PostSummaryDTO::postId, Function.identity(), (p1, p2) -> p1));
+      }
     } catch (Exception e) {
-      log.warn("Failed to fetch post #{} from blog-service: {}", postId, e.getMessage());
-      return null;
+      log.warn("Failed to lookup posts {} from blog-service: {}", postIds, e.getMessage());
     }
+    return Collections.emptyMap();
   }
 }

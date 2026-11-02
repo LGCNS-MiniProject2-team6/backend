@@ -2,7 +2,6 @@ package com.recu.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -55,18 +54,20 @@ class BookmarkApiTest {
                 .updatedAt(LocalDate.now())
                 .build());
 
-    given(blogServiceClient.getPost(eq(501L), any()))
+    given(blogServiceClient.lookupPosts(any()))
         .willReturn(
-            new BlogServiceClient.PostResponseDTO(
-                501L,
-                1L,
-                "Spring Boot MSA 구축기",
-                LocalDate.of(2026, 11, 1),
-                "카카오",
-                List.of("Backend"),
-                "MSA 구축 사례 요약",
-                List.of("Spring Boot", "Kafka"),
-                "https://example.com/posts/501"));
+            new BlogServiceClient.PostSummaryResponse(
+                List.of(
+                    new BlogServiceClient.PostSummaryDTO(
+                        501L,
+                        1L,
+                        "Spring Boot MSA 구축기",
+                        "카카오",
+                        "MSA 구축 사례 요약",
+                        List.of("Backend"),
+                        List.of("Spring Boot", "Kafka"),
+                        LocalDate.of(2026, 11, 1),
+                        "https://example.com/posts/501"))));
   }
 
   @Test
@@ -93,7 +94,8 @@ class BookmarkApiTest {
         .andExpect(jsonPath("$.count").value(1))
         .andExpect(jsonPath("$.bookmarks[0].postId").value(501))
         .andExpect(jsonPath("$.bookmarks[0].title").value("Spring Boot MSA 구축기"))
-        .andExpect(jsonPath("$.bookmarks[0].companyName").value("카카오"));
+        .andExpect(jsonPath("$.bookmarks[0].companyName").value("카카오"))
+        .andExpect(jsonPath("$.bookmarks[0].skills[0]").value("Spring Boot"));
 
     // 3. 북마크 삭제 (DELETE)
     mockMvc
