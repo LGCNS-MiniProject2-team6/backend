@@ -2,12 +2,12 @@ package com.recu.blog.features.post.service;
 
 import com.recu.blog.commons.exception.BusinessException;
 import com.recu.blog.commons.exception.ErrorCode;
-import com.recu.blog.database.entity.BlogPostEntity;
-import com.recu.blog.database.entity.BlogPostSectionEntity;
+import com.recu.blog.features.internal.domain.entity.BlogPostEntity;
+import com.recu.blog.features.internal.domain.entity.BlogPostSectionEntity;
+import com.recu.blog.features.internal.repository.BlogPostRepository;
+import com.recu.blog.features.internal.repository.BlogPostSectionRepository;
 import com.recu.blog.features.post.domain.dto.PostResponseDTO;
 import com.recu.blog.features.post.domain.dto.PostResponseDTO.Section;
-import com.recu.blog.features.post.repository.PostRepository;
-import com.recu.blog.features.post.repository.PostSectionRepository;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -28,8 +28,8 @@ public class PostReadService {
 
   private static final Pattern ABSOLUTE_URL = Pattern.compile("^[a-zA-Z][a-zA-Z0-9+.-]*:");
 
-  private final PostRepository postRepository;
-  private final PostSectionRepository sectionRepository;
+  private final BlogPostRepository postRepository;
+  private final BlogPostSectionRepository sectionRepository;
 
   @Transactional(readOnly = true)
   public PostResponseDTO getPost(Long id) {

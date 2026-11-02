@@ -7,8 +7,10 @@ import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @RestControllerAdvice
@@ -30,6 +32,7 @@ public class GlobalExceptionHandler {
 
   @ExceptionHandler({
     HttpMessageNotReadableException.class,
+    MissingServletRequestParameterException.class,
     MethodArgumentTypeMismatchException.class
   })
   ResponseEntity<ErrorResponse> invalid(Exception e) {
@@ -44,6 +47,14 @@ public class GlobalExceptionHandler {
   @ExceptionHandler(FeignException.class)
   ResponseEntity<ErrorResponse> upstream(FeignException e) {
     return response(ErrorCode.UPSTREAM_UNAVAILABLE, null);
+  }
+
+  @ExceptionHandler(ResponseStatusException.class)
+  ResponseEntity<ErrorResponse> internalStatus(ResponseStatusException e) {
+    ErrorCode code =
+        e.getStatusCode().value() == 404 ? ErrorCode.NOT_FOUND : ErrorCode.INVALID_INPUT;
+    return ResponseEntity.status(e.getStatusCode())
+        .body(new ErrorResponse(code.getCode(), code.getMessage(), null));
   }
 
   @ExceptionHandler(Exception.class)

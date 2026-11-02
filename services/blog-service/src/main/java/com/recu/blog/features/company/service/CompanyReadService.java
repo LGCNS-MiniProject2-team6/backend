@@ -3,13 +3,6 @@ package com.recu.blog.features.company.service;
 import com.recu.blog.client.dto.RecommendationProfile;
 import com.recu.blog.commons.exception.BusinessException;
 import com.recu.blog.commons.exception.ErrorCode;
-import com.recu.blog.database.entity.BlogPostEntity;
-import com.recu.blog.database.entity.BlogPostTagEntity;
-import com.recu.blog.database.entity.CompanyEntity;
-import com.recu.blog.database.entity.TechTagEntity;
-import com.recu.blog.database.repository.BlogPostRepository;
-import com.recu.blog.database.repository.BlogPostTagRepository;
-import com.recu.blog.database.repository.CompanyRepository;
 import com.recu.blog.features.company.domain.dto.CompanyListResponseDTO;
 import com.recu.blog.features.company.domain.dto.CompanyListResponseDTO.CompanyDTO;
 import com.recu.blog.features.company.domain.dto.CompanyListResponseDTO.SkillResponseDTO;
@@ -19,6 +12,13 @@ import com.recu.blog.features.company.domain.dto.CompanyPostListResponseDTO.Post
 import com.recu.blog.features.company.domain.dto.CompanyResponseDTO;
 import com.recu.blog.features.company.domain.dto.CompanyStatsDTO;
 import com.recu.blog.features.company.repository.CompanyPostQueryRepository;
+import com.recu.blog.features.internal.domain.entity.BlogPostEntity;
+import com.recu.blog.features.internal.domain.entity.BlogPostTagEntity;
+import com.recu.blog.features.internal.domain.entity.CompanyEntity;
+import com.recu.blog.features.internal.domain.entity.TechTagEntity;
+import com.recu.blog.features.internal.repository.BlogPostRepository;
+import com.recu.blog.features.internal.repository.BlogPostTagRepository;
+import com.recu.blog.features.internal.repository.CompanyRepository;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -41,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CompanyReadService {
 
   private final CompanyRepository companyRepository;
-  private final com.recu.blog.database.repository.TechTagRepository techTagRepository;
+  private final com.recu.blog.features.internal.repository.TechTagRepository techTagRepository;
   private final BlogPostRepository blogPostRepository;
   private final BlogPostTagRepository blogPostTagRepository;
   private final CompanyPostQueryRepository companyPostQueryRepository;
@@ -70,7 +70,7 @@ public class CompanyReadService {
     Map<CompanyEntity, Map<TechTagEntity, Integer>> tagsByCompany =
         blogPostTagEntity.stream()
             .filter(tag -> techPostIds.contains(tag.getBlogPost().getBlog_post_id()))
-            .filter(tag -> wantSkillIds.contains(tag.getTechTag().getTech_tag_id()))
+            .filter(tag -> wantSkillIds.contains(tag.getTechTag().getTechTagId()))
             .collect(
                 Collectors.groupingBy(
                     tag -> tag.getBlogPost().getCompany(),
@@ -92,7 +92,7 @@ public class CompanyReadService {
                       blogPostTagEntity.stream()
                           .filter(tag -> techPostIds.contains(tag.getBlogPost().getBlog_post_id()))
                           .filter(tag -> tag.getBlogPost().getCompany().equals(company))
-                          .filter(tag -> wantSkillIds.contains(tag.getTechTag().getTech_tag_id()))
+                          .filter(tag -> wantSkillIds.contains(tag.getTechTag().getTechTagId()))
                           .map(tag -> tag.getBlogPost().getBlog_post_id())
                           .collect(Collectors.toSet())
                           .size();

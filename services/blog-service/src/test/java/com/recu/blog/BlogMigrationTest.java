@@ -7,13 +7,17 @@ import static org.mockito.Mockito.*;
 import com.recu.blog.client.*;
 import com.recu.blog.client.dto.*;
 import com.recu.blog.commons.exception.*;
+import com.recu.blog.features.internal.repository.*;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.*;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.jdbc.Sql;
 
@@ -36,6 +40,8 @@ class BlogMigrationTest {
   @Autowired TestRestTemplate http;
   @Autowired JdbcTemplate jdbc;
   @Autowired PersonalizationClient personalization;
+  @Autowired ApplicationContext context;
+  @Autowired EntityManagerFactory entityManagerFactory;
   @MockitoBean UserClient users;
   @MockitoBean AiClient ai;
 
@@ -252,5 +258,62 @@ class BlogMigrationTest {
     when(users.findBookmarks(eq(7L), any())).thenReturn(new PostIdsResponse(List.of()));
     personalization.bookmarks(7L, java.util.stream.LongStream.rangeClosed(1, 401).boxed().toList());
     verify(users, times(3)).findBookmarks(eq(7L), any());
+  }
+
+  @Test
+  void allBusinessAndInternalReadsUseOneCanonicalModelAndRepositorySet() {
+    assertThat(context.getBeansOfType(BlogPostRepository.class))
+        .containsOnlyKeys("blogPostRepository");
+    assertThat(context.getBeansOfType(BlogPostSectionRepository.class))
+        .containsOnlyKeys("blogPostSectionRepository");
+    assertThat(context.getBeansOfType(CompanyRepository.class))
+        .containsOnlyKeys("companyRepository");
+    assertThat(context.getBeansOfType(TechTagRepository.class))
+        .containsOnlyKeys("techTagRepository");
+    assertThat(entityManagerFactory.getMetamodel().getEntities())
+        .hasSize(6)
+        .allSatisfy(
+            entity ->
+                assertThat(entity.getJavaType().getPackageName())
+                    .isEqualTo("com.recu.blog.features.internal.domain.entity"));
+    assertThat(context.getBeansOfType(SecurityFilterChain.class)).containsOnlyKeys("blogSecurity");
+    assertThat(context.containsBean("temporarySecurity")).isFalse();
+  }
+
+  @Test
+  void teammateAiReadEndpointsKeepTheirOriginalResponseContracts() {
+    var post = request(HttpMethod.GET, "/internal/blog/101", null, null, "test-internal-token");
+    assertThat(post.getStatusCode().value()).isEqualTo(200);
+    assertThat(post.getBody().get("blogPostId").asLong()).isEqualTo(101);
+    assertThat(post.getBody().get("companyId").asLong()).isEqualTo(1);
+    assertThat(post.getBody().get("contentText").asText()).isEqualTo("spring text");
+    var sections =
+        request(HttpMethod.GET, "/internal/blog/101/sections", null, null, "test-internal-token");
+    assertThat(sections.getBody().get(0).get("seq").asInt()).isEqualTo(1);
+    assertThat(sections.getBody().get(0).get("contentText").asText()).isEqualTo("hello");
+    var company = request(HttpMethod.GET, "/internal/company/1", null, null, "test-internal-token");
+    assertThat(company.getBody().get("name").asText()).isEqualTo("Alpha");
+    var tags =
+        request(HttpMethod.GET, "/internal/tech-tags?ids=10,20", null, null, "test-internal-token");
+    assertThat(tags.getBody().size()).isEqualTo(2);
+    assertThat(tags.getBody().get(0).get("techTagId").asLong()).isEqualTo(20);
+    verifyNoInteractions(users, ai);
+  }
+
+  @Test
+  void teammateAiReadEndpointsPreserveNotFoundInsteadOf500() {
+    for (String path :
+        List.of("/internal/blog/999", "/internal/blog/999/sections", "/internal/company/999")) {
+      var result = request(HttpMethod.GET, path, null, null, "test-internal-token");
+      assertThat(result.getStatusCode().value()).isEqualTo(404);
+      assertThat(result.getBody().get("code").asText()).isEqualTo("NOT_FOUND");
+    }
+  }
+
+  @Test
+  void teammateTechnologyLookupRequiresItsIdsParameter() {
+    var result = request(HttpMethod.GET, "/internal/tech-tags", null, null, "test-internal-token");
+    assertThat(result.getStatusCode().value()).isEqualTo(400);
+    assertThat(result.getBody().get("code").asText()).isEqualTo("INVALID_INPUT");
   }
 }

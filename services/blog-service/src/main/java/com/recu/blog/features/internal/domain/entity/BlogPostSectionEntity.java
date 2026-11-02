@@ -1,4 +1,4 @@
-package com.recu.blog.database.entity;
+package com.recu.blog.features.internal.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -10,27 +10,18 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Entity
 @Table(
     name = "blog_post_section",
-    uniqueConstraints = {
-      @UniqueConstraint(
-          name = "uk_blog_post_section",
-          columnNames = {
-            "blog_post_id",
-            "seq",
-          })
-    })
+    uniqueConstraints =
+        @UniqueConstraint(
+            name = "uk_blog_post_section",
+            columnNames = {"blog_post_id", "seq"}))
 @Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
 public class BlogPostSectionEntity {
+
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long section_id;
@@ -53,4 +44,6 @@ public class BlogPostSectionEntity {
 
   @Column(nullable = false)
   private Integer char_count;
+
+  protected BlogPostSectionEntity() {}
 }

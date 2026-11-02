@@ -1,7 +1,7 @@
 package com.recu.blog.features.company.repository;
 
-import com.recu.blog.database.entity.BlogPostEntity;
-import com.recu.blog.database.entity.BlogPostTagEntity;
+import com.recu.blog.features.internal.domain.entity.BlogPostEntity;
+import com.recu.blog.features.internal.domain.entity.BlogPostTagEntity;
 import java.util.List;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.Repository;

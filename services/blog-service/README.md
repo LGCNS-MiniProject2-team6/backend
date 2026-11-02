@@ -47,3 +47,7 @@ H2 격리 테스트에서 추천 순서/기술 필터/본문·목차/북마크·
 인프라 담당의 DB 없는 등록/설정/Bus 검증은 **진단 전용** `diagnostic` 프로필을 함께 사용한다. 이 프로필은 업무 API·DB·해당 보안 구성을 로딩하지 않으므로 기능 검증 또는 배포에 사용하지 않는다. 기존 `scripts/verify-msa.py`, `scripts/verify-config.py`는 Blog에만 이 프로필을 추가하도록 수정했다.
 
 내부 API 계약·수정 파일·팀 연동 사항은 [인계 문서](../../docs/BLOG_SERVICE_HANDOFF.md)를 참고한다.
+
+## 공통 모델 기준
+
+AI 담당자 브랜치 e010322의 `features/internal/domain/entity` 및 `features/internal/repository`를 공통 모델로 사용한다. 기존 `database` 패키지는 제거했고 외부 조회와 내부 조회가 같은 Repository를 주입받는다. 상대 코드의 `/internal/blog/{postId}`, `/internal/blog/{postId}/sections`, `/internal/company/{companyId}`, `/internal/tech-tags?ids=...` 계약도 제공하며, 기존 내부 인증 토큰 헤더가 필요하다. AI 쪽 BlogReadFeignConfig가 blog-service 호출에 토큰을 전달하므로 동일한 INTERNAL_API_TOKEN을 주입한다. 자세한 후속 변경/검증 및 User 담당자 인계는 인계 문서의 "Blog 모델 통일 후속 반영"을 참고한다.

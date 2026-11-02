@@ -1,4 +1,4 @@
-package com.recu.blog.database.entity;
+package com.recu.blog.features.internal.domain.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

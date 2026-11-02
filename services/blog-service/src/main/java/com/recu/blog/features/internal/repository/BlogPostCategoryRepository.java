@@ -1,7 +1,7 @@
-package com.recu.blog.database.repository;
+package com.recu.blog.features.internal.repository;
 
-import com.recu.blog.database.entity.BlogPostCategoryEntity;
-import com.recu.blog.database.entity.BlogPostCategoryPk;
+import com.recu.blog.features.internal.domain.entity.BlogPostCategoryEntity;
+import com.recu.blog.features.internal.domain.entity.BlogPostCategoryPk;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

@@ -1,7 +1,7 @@
 package com.recu.blog.features.tech.service;
 
-import com.recu.blog.database.entity.TechTagEntity;
-import com.recu.blog.database.repository.TechTagRepository;
+import com.recu.blog.features.internal.domain.entity.TechTagEntity;
+import com.recu.blog.features.internal.repository.TechTagRepository;
 import com.recu.blog.features.tech.domain.dto.TechResponseDTO;
 import com.recu.blog.features.tech.domain.dto.TechResponseDTO.TechTagDTO;
 import java.util.List;
@@ -53,7 +53,7 @@ public class TechService {
         DISPLAY_ORDER.stream()
             .map(this::findOrWarn)
             .filter(Objects::nonNull)
-            .map(e -> new TechTagDTO(e.getTech_tag_id(), e.getName(), e.getField()))
+            .map(e -> new TechTagDTO(e.getTechTagId(), e.getName(), e.getField()))
             .toList();
 
     if (techTags.size() != DISPLAY_ORDER.size()) {

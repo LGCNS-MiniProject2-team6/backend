@@ -16,7 +16,7 @@ blog-service/com.recu.blog
 ├── features/company/      기존 추천·기업·글 목록
 ├── features/post/         기존 본문·목차·상대 URL 변환
 ├── features/tech/         기존 기술 칩
-├── database/              Blog 소유 Entity·Repository
+├── features/internal/     AI 브랜치 기준 공통 Entity·Repository 및 내부 조회
 ├── client/                UserClient, AiClient, 배치 조합
 ├── internal/              User/AI가 호출하는 Blog 데이터 조회
 └── commons/               헤더 인증 연결·접근 제어·기존 오류 형식
@@ -99,3 +99,52 @@ X-Internal-Token은 필수다. 두 배치 API는 1~200개의 양수 ID를 받는
 - 작업 브랜치: `refactor/26/blog-service-separation`
 - PR 대상: `develop`
 - User 연동 작업 #24의 `X-User-Id`와 설계 문서의 `userId` 차이는 통합 리뷰 대상
+
+## Blog 모델 통일 후속 반영
+
+기준은 `refactor/1/ai-service`의 `e01032226d310919c63c1af27b7fec4833f8823f`이다. AI 담당자가 추가한 아래 위치와 ID/getter 명명을 기준으로 Blog의 기존 기능을 맞췄다.
+
+- 공통 Entity: `com.recu.blog.features.internal.domain.entity`
+- 공통 Repository: `com.recu.blog.features.internal.repository`
+- 기존 `com.recu.blog.database` Entity/Repository 및 중복 PostRepository/PostSectionRepository 제거
+- 기존 기업·글·기술 칩과 양쪽 내부 조회 Service가 같은 공통 모델·Repository 사용
+- 기존 게시글 태그/카테고리·복합 키도 공통 패키지에 배치, TechTagEntity에는 기존 응답에 필요한 field/aliases/post_count/selectable 컬럼 보완
+- 기술 태그 ID는 상대 코드의 `techTagId` / `getTechTagId()` 유지
+- 본문 기술명 조회와 기술명 단건 조회는 공통 Repository에 보완
+- DB 테이블명·컬럼명·기존 PK와 외부 API 응답 유지
+
+AI 브랜치의 내부 조회 Controller/DTO/Service도 반영했으므로 아래 원래 호출 주소를 유지한다.
+
+| Method | 경로 | 응답 |
+|---|---|---|
+| GET | /internal/blog/{postId} | AI가 기대하는 blogPostId·본문·기업 ID 등 |
+| GET | /internal/blog/{postId}/sections | seq 순서의 구간 목록 |
+| GET | /internal/company/{companyId} | 기업 정보 |
+| GET | /internal/tech-tags?ids=1,2 | techTagId·name 목록 |
+
+이 주소들도 Blog의 기존 내부 인증 계약인 `X-Internal-Token`을 사용한다. 이번 후속 변경의 AI `internal/BlogReadFeignConfig`가 `blog-service` Feign 호출에만 해당 헤더를 붙인다. 기존과 같이 동일한 INTERNAL_API_TOKEN을 환경변수로 주입해야 하며 다른 Feign 대상에는 Blog 토큰을 전달하지 않는다. 기존 /internal/posts 등 주소도 유지한다.
+
+상대 브랜치의 임시 `features/internal/temp` Security는 공통 컴포넌트 스캔에서 제외하며 Blog의 보안 체인을 하나만 사용한다. 상대 Service의 ResponseStatusException은 공통 예외 처리기에서 원래 상태 코드로 반환한다. 내부 보안 정책을 permitAll로 완화하지 않았다.
+
+정리 후 회귀 검증에는 공통 Repository별 Bean 1개, Entity별 단일 타입, 보안 체인 1개, AI용 원래 4개 조회 경로, 404와 필수 파라미터 오류를 포함한다. GitHub PR을 병합하지 않았으며 현재 Blog 작업 브랜치의 후속 커밋으로 제출한다.
+
+### 예림 담당 User 쪽 인계
+
+`feat/24/user-service-api`의 `522dd936601fdf36cbda7377ce77df61aec56ec5`와 AI 브랜치를 비교했다. 이번 후속 변경에서는 User 업무 모델을 임의로 바꾸지 않는다. AI 브랜치가 추가한 User 내부 조회 Service가 아래 예림 코드의 모델/Repository를 재사용하면 중복을 정리할 수 있다.
+
+- AppUserEntity/AppUserRepository 대신 `com.recu.user.domain.entity.UserEntity` / `com.recu.user.repository.UserRepository` 사용
+- AI 쪽 UserJobFieldEntity/UserSkillEntity/UserSkillId 대신 예림의 UserJobFieldEntity/UserSkillEntity/UserSkillPk 재사용
+- AI 쪽 UserJobFieldRepository/UserSkillRepository 중복 선언 제거 후 예림 Repository 사용
+- ProfileInternalService의 `findByUserId(userId)`와 `findProfileSkills(userId)`를 각각 예림 Repository의 `findByUser_UserId(userId)`로 연결, 기술 ID 순서가 필요하면 결과 정렬
+- /internal/users/{userId} 경로와 ProfileResponseDTO는 유지하면서 import/주입 대상/조회 메서드만 조정
+
+이것은 User 쪽 통합 시 필요한 별도 변경이며 Blog 중복 해결 완료와 구분한다. User 담당자의 PR과 함께 검토해야 한다.
+
+### 후속 검증 결과
+
+- 전체 `bash ./gradlew check --no-daemon` 통과: 72개 테스트, 실패/오류 0
+- Blog 20개: 기존 외부 동작, 공통 Bean/Entity 단일성, AI 원래 조회 계약, 404/400 유지, 임시 Security 제외
+- AI 6개: 기존 조회 어댑터 4개 + Blog Feign 인증 전달/다른 대상에 미전달 2개
+- 실제 로컬 MariaDB에서 상대 AI용 4개 조회, 기존 본문·추천·목록과 User/AI 개인화 조합, 내부 인증 및 404 응답 확인
+- 새 Blog와 AI 모듈로 로컬 재시작, Eureka 등록 수렴 후 Blog health 및 Gateway 경유 글 상세 조회 정상 확인
+- 실제 Gemini 생성 요청은 수행하지 않았으며, User 서비스 담당자 브랜치의 업무 모델 통합은 별도 인계 사항

@@ -1,10 +1,9 @@
 package com.recu.blog.internal.service;
 
 import com.recu.blog.commons.exception.*;
-import com.recu.blog.database.entity.*;
-import com.recu.blog.database.repository.*;
 import com.recu.blog.features.company.repository.CompanyPostQueryRepository;
-import com.recu.blog.features.post.repository.*;
+import com.recu.blog.features.internal.domain.entity.*;
+import com.recu.blog.features.internal.repository.*;
 import com.recu.blog.internal.dto.*;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -17,8 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class InternalBlogService {
-  private final PostRepository posts;
-  private final PostSectionRepository sections;
+  private final BlogPostRepository posts;
+  private final BlogPostSectionRepository sections;
   private final CompanyPostQueryRepository queries;
   private final TechTagRepository tags;
 
@@ -88,7 +87,7 @@ public class InternalBlogService {
   public Map<String, Object> techTags(List<Long> ids) {
     var found =
         tags.findAllById(ids).stream()
-            .map(t -> new Tech(t.getTech_tag_id(), t.getName(), t.getField()))
+            .map(t -> new Tech(t.getTechTagId(), t.getName(), t.getField()))
             .toList();
     Set<Long> present = found.stream().map(Tech::techTagId).collect(Collectors.toSet());
     return Map.of(
