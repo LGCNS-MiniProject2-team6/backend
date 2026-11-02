@@ -1,0 +1,4 @@
+# 컨테이너(Linux)에서 실행하므로 Windows checkout에서도 LF를 유지한다.
+*.sh   text eol=lf
+*.conf text eol=lf
+*.env  text eol=lf
