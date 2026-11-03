@@ -49,6 +49,7 @@ dependencies {
     // 수집: RSS 피드와 글 본문 HTML 을 읽는다 (features/collect)
     // Spring Boot 가 버전을 관리하지 않는 라이브러리라 버전을 직접 적는다
     implementation 'org.jsoup:jsoup:1.21.1'
+    implementation 'org.springframework.kafka:spring-kafka'
 
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'

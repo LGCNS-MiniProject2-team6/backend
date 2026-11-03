@@ -31,7 +31,18 @@ scrape_configs:
         labels:
           application: discovery-server
 
-  # Eureka에 등록된 앱 전체 (Config, Gateway, user, ai, blog)
+  # Config는 전용 지표 계정으로만 수집한다. 같은 Secret을 Config와 Prometheus에 주입한다.
+  - job_name: spring-apps-config
+    metrics_path: /actuator/prometheus
+    basic_auth:
+      username_file: /etc/prometheus/secrets/config-metrics/CONFIG_METRICS_USER
+      password_file: /etc/prometheus/secrets/config-metrics/CONFIG_METRICS_PASSWORD
+    static_configs:
+      - targets: [config-server:8888]
+        labels:
+          application: config-server
+
+  # Eureka에 등록된 앱 (Gateway, user, ai, blog). Config는 위 인증 job으로 분리.
   # 앱은 prefer-ip-address=true 로 Pod IP를 등록한다. K8s API 조회 권한(RBAC)이 필요 없다.
   - job_name: spring-apps
     metrics_path: /actuator/prometheus
@@ -39,6 +50,9 @@ scrape_configs:
       - server: http://discovery-server:8761/eureka
         refresh_interval: 30s
     relabel_configs:
+      - source_labels: [__meta_eureka_app_name]
+        regex: '(?i:config-server)'
+        action: drop
       - source_labels: [__meta_eureka_app_instance_ip_addr, __meta_eureka_app_instance_port]
         separator: ':'
         target_label: __address__

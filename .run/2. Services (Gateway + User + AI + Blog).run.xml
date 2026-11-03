@@ -1,0 +1,9 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="2. Services (Gateway + User + AI + Blog)" type="CompoundRunConfigurationType">
+    <toRun name="Local - Gateway" type="Application" />
+    <toRun name="Local - User" type="Application" />
+    <toRun name="Local - AI" type="Application" />
+    <toRun name="Local - Blog" type="Application" />
+    <method v="2" />
+  </configuration>
+</component>

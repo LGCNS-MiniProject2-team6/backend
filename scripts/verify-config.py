@@ -42,6 +42,7 @@ def expect_unauthorized(url, username=None, password=None):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--verify-prometheus', action='store_true', help='앱 6개 지표와 Config 전용 수집 계정 권한 검증')
     parser.add_argument('--verify-encryption', action='store_true', help='임시 Git에서 암복호화·권한·3개 서비스 수신 검증')
     parser.add_argument('--verify-bus', action='store_true', help='실제 Kafka로 1회 Bus 갱신 및 무재시작 전파 검증')
     parser.add_argument('--git-uri', help='HTTPS 원격 또는 file URI. 생략하면 기존 임시 Git 검증')
@@ -66,7 +67,7 @@ def main():
     jars = [ROOT / f'platform/{name}/build/libs/{name}.jar' for name in names[:2]] + [
         ROOT / f'services/{name}/build/libs/{name}.jar' for name in services
     ]
-    if args.verify_bus or args.verify_encryption:
+    if args.verify_bus or args.verify_encryption or args.verify_prometheus:
         names.append('api-gateway')
         jars.append(ROOT / 'platform/api-gateway/build/libs/api-gateway.jar')
     for jar in jars:
@@ -134,6 +135,7 @@ def main():
             config_url = f'http://127.0.0.1:{ports[1]}'
             username, password = 'config-test', secrets.token_urlsafe(32)
             admin, admin_password = 'config-admin-test', secrets.token_urlsafe(32)
+            metrics_user, metrics_password = 'metrics-test', secrets.token_urlsafe(32)
             encrypt_key = secrets.token_urlsafe(48)
             crypto_plain = 'verification-only-' + secrets.token_hex(8)
             base_env = dict(os.environ, CONFIG_USER=username, CONFIG_PASSWORD=password,
@@ -149,13 +151,16 @@ def main():
                 log = (logs_dir / f'{name}.log').open('w')
                 logs.append(log)
                 env = dict(base_env, SERVER_PORT=str(port), BUS_INSTANCE_ID=f'{name}:verification:{port}')
-                if name == 'blog-service':
-                    env['SPRING_PROFILES_INCLUDE'] = 'diagnostic'
+                env.pop('CONFIG_METRICS_USER', None)
+                env.pop('CONFIG_METRICS_PASSWORD', None)
                 env.pop('ENCRYPT_KEY', None)
                 env.pop('CONFIG_ADMIN_USER', None)
                 env.pop('CONFIG_ADMIN_PASSWORD', None)
                 if name == 'config-server':
                     env['ENCRYPT_KEY'] = encrypt_key
+                    if args.verify_prometheus:
+                        env['CONFIG_METRICS_USER'] = metrics_user
+                        env['CONFIG_METRICS_PASSWORD'] = metrics_password
                     if args.verify_bus or args.verify_encryption:
                         env['CONFIG_ADMIN_USER'] = admin
                         env['CONFIG_ADMIN_PASSWORD'] = admin_password
@@ -222,6 +227,35 @@ def main():
                 for path in ['health', 'health/liveness', 'health/readiness']:
                     msa.wait_until(lambda p=port, h=path: request_json(f'http://127.0.0.1:{p}/actuator/{h}')['status'] == 'UP',
                                    processes, 60, f'{name} {path}')
+                if args.verify_prometheus:
+                    headers = {'Accept': 'text/plain;version=0.0.4'}
+                    if name == 'config-server':
+                        expect_unauthorized(config_url + '/actuator/prometheus')
+                        token = base64.b64encode(f'{metrics_user}:{metrics_password}'.encode()).decode()
+                        headers['Authorization'] = 'Basic ' + token
+                        for path, method, user, secret, status in [
+                            ('/actuator/prometheus', 'GET', username, password, 403),
+                            (f'/user-service/local/{label}', 'GET', metrics_user, metrics_password, 403),
+                            ('/encrypt', 'POST', metrics_user, metrics_password, 403),
+                            ('/actuator/busrefresh', 'POST', metrics_user, metrics_password, 403),
+                            ('/actuator/prometheus', 'POST', metrics_user, metrics_password, (401, 403)),
+                        ]:
+                            auth = base64.b64encode(f'{user}:{secret}'.encode()).decode()
+                            req = urllib.request.Request(config_url + path, method=method,
+                                headers={'Authorization': 'Basic ' + auth})
+                            try:
+                                msa.HTTP.open(req, timeout=5).close()
+                            except urllib.error.HTTPError as error:
+                                assert error.code in (status if isinstance(status, tuple) else (status,)), (path, method, error.code)
+                            else:
+                                raise AssertionError(f'권한 밖 요청 허용: {path}')
+                    req = urllib.request.Request(f'http://127.0.0.1:{port}/actuator/prometheus', headers=headers)
+                    with msa.HTTP.open(req, timeout=5) as response:
+                        metrics = response.read().decode()
+                        assert response.status == 200 and 'text/plain' in response.headers['Content-Type']
+                        assert '# HELP ' in metrics and 'jvm_memory_used_bytes' in metrics
+                        assert 'http_server_requests_seconds_count' in metrics
+                    print(f'PASS {name}: Prometheus JVM/HTTP 지표 및 접근 계약', flush=True)
                 if name in services:
                     actual = request_json(f'http://127.0.0.1:{port}/actuator/info')['config']
                     expected = {'source': 'recu-config', 'version': marker, 'profile': args.profile, 'service': name}

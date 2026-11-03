@@ -109,3 +109,7 @@ Discovery는 Bus에 참여하지 않고 Config/Git/Kafka 인증도 필요 없다
 5. 외부 관리 경로 차단·dev/prod 교차 통신 차단·Pod 복구·readiness 미완료 Pod 트래픽 제외 확인.
 
 로컬에서는 설정/권한·암복호화·Gateway/CORS·실제 테스트 Kafka 갱신을 확인했다. 서버 접속·실제 Secret 생성·이미지 pull·Ingress·배포 Kafka 인증·부하 테스트는 별도다. 미확정 사항은 [검토 목록](REVIEW_CHECKLIST.md)에 담당자와 완료 기준을 정리했다.
+
+## Prometheus 앱 지표 인계 (#50)
+
+[앱 지표 안내](PROMETHEUS_APP_GUIDE.md)에 앱 6개 노출, Config 전용 지표 Secret·Prometheus 마운트, 이미지 재빌드 및 외부 관리 경로 차단 조건을 정리했다.

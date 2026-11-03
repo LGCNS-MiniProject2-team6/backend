@@ -20,7 +20,7 @@ spec:
         workload: service
       containers:
         - name: app
-          image: registry.invalid/recu/user-service:replace-me
+          image: junwooqkr5302/recu-userservice:9075f1b
           ports:
             - name: http
               containerPort: 8082
@@ -29,6 +29,8 @@ spec:
                 name: platform-runtime
             - configMapRef:
                 name: bus-runtime
+            - configMapRef:
+                name: db-runtime
           env:
             - name: SERVER_PORT
               value: "8082"
@@ -42,6 +44,16 @@ spec:
                 secretKeyRef:
                   name: config-client-secrets
                   key: CONFIG_PASSWORD
+            # db-runtime의 DB_URL/DB_USER는 ai용이므로 user 값으로 덮어쓴다 (env가 envFrom보다 우선).
+            - name: DB_URL
+              value: $(USER_DB_URL)
+            - name: DB_USER
+              value: $(USER_DB_USER)
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mariadb-secret
+                  key: USER_DB_PASSWORD
           startupProbe:
             httpGet:
               path: /actuator/health/liveness

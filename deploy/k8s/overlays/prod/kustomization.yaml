@@ -5,6 +5,14 @@ resources:
   - namespace.yaml
   - ../../base
 configMapGenerator:
+  - name: db-runtime
+    literals:
+      - USER_DB_URL=jdbc:mariadb://mariadb.recu-prod.svc.cluster.local:3306/user_service
+      - USER_DB_USER=user_service
+      - DB_URL=jdbc:mariadb://mariadb.recu-prod.svc.cluster.local:3306/ai_service
+      - DB_USER=ai_service
+      - BLOG_DB_URL=jdbc:mariadb://mariadb.recu-prod.svc.cluster.local:3306/blog_service
+      - BLOG_DB_USER=blog_service
   - name: bus-runtime
     literals:
       - BUS_ENABLED=true

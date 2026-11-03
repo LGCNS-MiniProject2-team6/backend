@@ -1,0 +1,47 @@
+name: MariaDB Image CI
+
+on:
+  pull_request:
+    branches: [develop]
+    paths:
+      - "database/**"
+      - "mini8-content-dump.sql"
+      - ".github/workflows/mariadb-image.yml"
+
+  push:
+    branches: [develop]
+    paths:
+      - "database/**"
+      - "mini8-content-dump.sql"
+      - ".github/workflows/mariadb-image.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  mariadb-image:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+
+    env:
+      DB_IMAGE: junwooqkr5302/recu-mariadb:${{ github.sha }}
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Build and verify MariaDB image
+        run: bash database/scripts/verify-local.sh
+
+      - name: Login to Docker Hub
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        uses: docker/login-action@v4
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Push verified image
+        if: github.event_name == 'push' && github.ref == 'refs/heads/develop'
+        run: docker push "$DB_IMAGE"
