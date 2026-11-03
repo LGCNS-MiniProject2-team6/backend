@@ -75,7 +75,7 @@ class BookmarkApiTest {
   void bookmarkLifecycle_Success() throws Exception {
     // 1. 북마크 추가 (POST)
     mockMvc
-        .perform(post("/api/bookmarks/501").header("X-User-Id", testUser.getUserId()))
+        .perform(post("/api/bookmarks/501").header("userId", testUser.getUserId()))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.postId").value(501));
 
@@ -84,12 +84,12 @@ class BookmarkApiTest {
 
     // 중복 북마크 시 409 Conflict 확인
     mockMvc
-        .perform(post("/api/bookmarks/501").header("X-User-Id", testUser.getUserId()))
+        .perform(post("/api/bookmarks/501").header("userId", testUser.getUserId()))
         .andExpect(status().isConflict());
 
     // 2. 북마크 조회 (GET) - BlogServiceClient 연동 매핑 검증
     mockMvc
-        .perform(get("/api/bookmarks").header("X-User-Id", testUser.getUserId()))
+        .perform(get("/api/bookmarks").header("userId", testUser.getUserId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.count").value(1))
         .andExpect(jsonPath("$.bookmarks[0].postId").value(501))
@@ -99,7 +99,7 @@ class BookmarkApiTest {
 
     // 3. 북마크 삭제 (DELETE)
     mockMvc
-        .perform(delete("/api/bookmarks/501").header("X-User-Id", testUser.getUserId()))
+        .perform(delete("/api/bookmarks/501").header("userId", testUser.getUserId()))
         .andExpect(status().isNoContent());
 
     assertThat(bookmarkRepository.existsByUser_UserIdAndBlogPostId(testUser.getUserId(), 501L))

@@ -20,9 +20,11 @@ import org.springframework.jdbc.core.JdbcTemplate;
       "eureka.client.enabled=false",
       "recu.internal.blog.enabled=true",
       "recu.internal.token=test-token",
+      "spring.datasource.driver-class-name=org.h2.Driver",
       "spring.datasource.url=jdbc:h2:mem:aiadapter;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
       "spring.datasource.username=sa",
-      "spring.datasource.password="
+      "spring.datasource.password=",
+      "gemini.api-key=test-only-dummy-key"
     })
 class BlogSupportTest {
   @Autowired TestRestTemplate http;

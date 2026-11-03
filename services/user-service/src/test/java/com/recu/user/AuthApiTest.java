@@ -110,7 +110,7 @@ class AuthApiTest {
     mockMvc
         .perform(
             post("/api/auth/logout")
-                .header("X-User-Id", user.getUserId())
+                .header("userId", user.getUserId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(logoutRequest)))
         .andExpect(status().isNoContent());
