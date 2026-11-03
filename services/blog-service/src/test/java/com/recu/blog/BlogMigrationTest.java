@@ -302,6 +302,17 @@ class BlogMigrationTest {
   }
 
   @Test
+  void internalSectionsFallBackToWholePostWhenNoneStored() {
+    var r = request(HttpMethod.GET, "/internal/blog/102/sections", null, null, "test-internal-token");
+    assertThat(r.getStatusCode().value()).isEqualTo(200);
+    assertThat(r.getBody().size()).isEqualTo(1);
+    assertThat(r.getBody().get(0).get("seq").asInt()).isEqualTo(1);
+    assertThat(r.getBody().get(0).get("heading").asText()).isEqualTo("React intro");
+    assertThat(r.getBody().get(0).get("contentText").asText()).isEqualTo("react text");
+    assertThat(r.getBody().get(0).get("charCount").asInt()).isEqualTo(10);
+  }
+
+  @Test
   void teammateAiReadEndpointsPreserveNotFoundInsteadOf500() {
     for (String path :
         List.of("/internal/blog/999", "/internal/blog/999/sections", "/internal/company/999")) {

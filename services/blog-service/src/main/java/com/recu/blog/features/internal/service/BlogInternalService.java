@@ -74,12 +74,19 @@ public class BlogInternalService {
   }
 
     public List<BlogPostSectionResponseDTO> getSections(Long postId) {
-        if (!postRepository.existsById(postId)) {
-            throw notFound();
+        BlogPostEntity post =
+                postRepository.findById(postId).orElseThrow(BlogInternalService::notFound);
+        List<BlogPostSectionResponseDTO> sections =
+                sectionRepository.findByPostId(postId).stream()
+                        .map(BlogInternalService::sectionResponse)
+                        .toList();
+        if (!sections.isEmpty()) {
+            return sections;
         }
-        return sectionRepository.findByPostId(postId).stream()
-                .map(BlogInternalService::sectionResponse)
-                .toList();
+        // 수집 API로 들어온 글은 섹션이 저장되지 않는다. 상세 화면(PostReadService)과 같이 본문 전체를 섹션 1개로 본다.
+        return List.of(
+                new BlogPostSectionResponseDTO(
+                        null, 1, post.getTitle(), null, post.getContent_text(), post.getChar_count()));
     }
 
     public List<TechTagResponseDTO> getTechTags(List<Long> ids) {
