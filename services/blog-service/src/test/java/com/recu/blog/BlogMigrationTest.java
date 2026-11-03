@@ -27,6 +27,7 @@ import org.springframework.test.context.jdbc.Sql;
       "spring.profiles.active=standalone",
       "spring.cloud.config.enabled=false",
       "spring.cloud.bus.enabled=false",
+      "recu.blog.events.listener-auto-startup=false",
       "eureka.client.enabled=false",
       "spring.datasource.url=jdbc:h2:mem:blogmigration;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
       "spring.datasource.driver-class-name=org.h2.Driver",

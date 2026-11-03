@@ -5,9 +5,11 @@ import com.recu.blog.commons.exception.BusinessException;
 import com.recu.blog.commons.exception.ErrorCode;
 import java.util.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /** Chunk long legacy lists without issuing one HTTP call per post. */
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class PersonalizationClient {

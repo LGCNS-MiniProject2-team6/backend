@@ -15,9 +15,70 @@ spring:
       - configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     config:
-      label: ${CONFIG_GIT_LABEL:main}
+      label: ${CONFIG_GIT_LABEL:apigatewaytest}
       username: ${CONFIG_USER:}
       password: ${CONFIG_PASSWORD:}
+    gateway:
+      default-filters:
+        - RemoveRequestHeader=userId
+      routes:
+        - id: auth-logout
+          order: -20
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth/logout
+            - Method=POST
+          filters:
+            - JwtValidation
+            - JwtUserId
+        - id: auth
+          uri: lb://user-service
+          predicates:
+            - Path=/api/auth,/api/auth/**
+        - id: user-profile
+          uri: lb://user-service
+          predicates:
+            - Path=/api/profile
+            - Method=GET,POST,PUT
+          filters:
+            - JwtValidation
+            - JwtUserId
+        - id: user-bookmarks
+          uri: lb://user-service
+          predicates:
+            - Path=/api/bookmarks,/api/bookmarks/*
+            - Method=GET,POST,DELETE
+          filters:
+            - JwtValidation
+            - JwtUserId
+        - id: user-service-other
+          order: 10
+          uri: lb://user-service
+          predicates:
+            - Path=/api/profile/**,/api/bookmarks/**,/api/notifications,/api/notifications/**
+        - id: ai-service
+          order: -10
+          uri: lb://ai-service
+          predicates:
+            - Path=/api/posts/*/guide
+            - Method=POST
+          filters:
+            - JwtValidation
+            - JwtUserId
+        - id: blog-user-context
+          order: -5
+          uri: lb://blog-service
+          predicates:
+            - Path=/api/posts/*,/api/companies,/api/companies/*/posts
+            - Method=GET
+          filters:
+            - JwtValidation
+            - JwtUserId
+        - id: blog-service
+          uri: lb://blog-service
+          predicates:
+            - Path=/api/posts,/api/posts/**,/api/companies,/api/companies/**,/api/tech-tags,/api/tech-tags/**
+
 
 eureka:
   client:
@@ -29,6 +90,9 @@ eureka:
     prefer-ip-address: true
     instance-id: ${spring.application.name}:${spring.cloud.client.ip-address}:${server.port}
 
+jwt:
+  secret: ${JWT_SECRET:default-secret-key-must-be-very-long-and-secure-at-least-256-bits-for-hmac-sha}
+
 management:
   endpoints:
     web:
@@ -39,3 +103,7 @@ management:
       show-details: never
       probes:
         enabled: true
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+    org.springframework.cloud.gateway: DEBUG
