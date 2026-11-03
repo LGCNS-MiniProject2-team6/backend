@@ -12,11 +12,13 @@ public class BlogServiceClientConfig {
   RequestInterceptor blogInternalAuthInterceptor(
       @Value("${recu.internal.token:${INTERNAL_API_TOKEN:}}") String token) {
     return template -> {
-      if (template.feignTarget() != null && "blog-service".equals(template.feignTarget().name())) {
-        if (token != null && !token.isBlank()) {
-          template.header("X-Internal-Token", token);
-        }
+      if (!template.url().startsWith("/internal/")) {
+        return;
       }
+      if (token == null || token.isBlank()) {
+        throw new IllegalStateException("INTERNAL_API_TOKEN is required for Blog internal calls");
+      }
+      template.header("X-Internal-Token", token);
     };
   }
 }

@@ -1,14 +1,9 @@
 package com.recu.ai.internal;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
 import javax.sql.DataSource;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.*;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.*;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -30,53 +25,5 @@ public class BlogSupportConfig {
   @ConditionalOnMissingBean(NamedParameterJdbcTemplate.class)
   NamedParameterJdbcTemplate blogSupportJdbc(DataSource source) {
     return new NamedParameterJdbcTemplate(source);
-  }
-
-  @Bean
-  FilterRegistrationBean<Filter> blogSupportAuthentication(
-      ObjectMapper mapper, @Value("${recu.internal.token:${INTERNAL_API_TOKEN:}}") String token) {
-    FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
-    bean.setFilter(
-        (request, response, chain) -> {
-          HttpServletRequest req = (HttpServletRequest) request;
-          HttpServletResponse res = (HttpServletResponse) response;
-          String supplied = req.getHeader("X-Internal-Token");
-          if (token.isBlank()
-              || supplied == null
-              || !MessageDigest.isEqual(
-                  token.getBytes(StandardCharsets.UTF_8),
-                  supplied.getBytes(StandardCharsets.UTF_8))) {
-            res.setStatus(401);
-            res.setContentType("application/json");
-            res.setCharacterEncoding("UTF-8");
-            mapper.writeValue(
-                res.getWriter(),
-                mapper
-                    .createObjectNode()
-                    .put("code", "UNAUTHORIZED")
-                    .put("message", "내부 서비스 인증이 필요합니다.")
-                    .putNull("field"));
-            return;
-          }
-          try {
-            if (Long.parseLong(req.getHeader("userId")) <= 0) throw new NumberFormatException();
-          } catch (NumberFormatException ex) {
-            res.setStatus(401);
-            res.setContentType("application/json");
-            res.setCharacterEncoding("UTF-8");
-            mapper.writeValue(
-                res.getWriter(),
-                mapper
-                    .createObjectNode()
-                    .put("code", "UNAUTHORIZED")
-                    .put("message", "유효하지 않은 사용자 정보입니다.")
-                    .put("field", "userId"));
-            return;
-          }
-          chain.doFilter(request, response);
-        });
-    bean.addUrlPatterns("/internal/*");
-    bean.setOrder(-100);
-    return bean;
   }
 }
