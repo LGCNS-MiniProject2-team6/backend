@@ -54,6 +54,9 @@ grafana-secret (recu-dev만)
 
 ai-secrets
   GEMINI_API_KEY (ai-service 필수. 없으면 기동 실패)
+
+internal-api-secrets
+  INTERNAL_API_TOKEN (user·ai·blog 공통. 서비스 간 /internal/** 호출 인증)
 ```
 
 `ai-secrets`는 ai-service에만 주입한다. 키 값이 명령 기록에 남지 않도록 아래처럼 만든다.
@@ -63,6 +66,16 @@ read -rs GEMINI_KEY   # 입력 내용이 화면에 표시되지 않음
 printf '%s' "$GEMINI_KEY" | sudo kubectl -n <namespace> create secret generic ai-secrets --from-file=GEMINI_API_KEY=/dev/stdin
 unset GEMINI_KEY
 ```
+
+`internal-api-secrets`는 user·ai·blog에 같은 값으로 주입한다. 사람이 값을 알 필요가 없으므로
+서버에서 생성해 바로 넣는다. 환경(namespace)마다 따로 만들며 값은 서로 달라도 된다.
+
+```bash
+openssl rand -hex 32 | tr -d '
+' | sudo kubectl -n <namespace> create secret generic internal-api-secrets --from-file=INTERNAL_API_TOKEN=/dev/stdin
+```
+
+값을 바꾸면 세 서비스를 함께 재시작한다 (`rollout restart deploy/user-service deploy/ai-service deploy/blog-service`).
 
 `ENCRYPT_KEY`, Config Git 토큰, 관리자 인증은 Config Server에만 주입한다.
 Gateway와 업무 서비스에는 `config-client-secrets`만 주입한다. Spring Cloud Bus 값은
