@@ -32,7 +32,8 @@ spring:
 recu:
   internal:
     token: ${INTERNAL_API_TOKEN:}
-
+    blog:
+      enabled: true
 # Eureka/Probe 기본값은 독립 진단용이며 환경별 중앙 설정으로 덮어쓸 수 있다.
 eureka:
   client:

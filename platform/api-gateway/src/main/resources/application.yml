@@ -15,7 +15,7 @@ spring:
       - configserver:${CONFIG_SERVER_URL:http://localhost:8888}
   cloud:
     config:
-      label: ${CONFIG_GIT_LABEL:main}
+      label: ${CONFIG_GIT_LABEL:apigatewaytest}
       username: ${CONFIG_USER:}
       password: ${CONFIG_PASSWORD:}
     gateway:
@@ -103,3 +103,7 @@ management:
       show-details: never
       probes:
         enabled: true
+logging:
+  level:
+    org.springframework.cloud.config: DEBUG
+    org.springframework.cloud.gateway: DEBUG
