@@ -75,7 +75,9 @@ public class BlogSupportConfig {
           }
           chain.doFilter(request, response);
         });
-    bean.addUrlPatterns("/internal/*");
+    // AI의 /internal/users/{id} 같은 다른 내부 경로는 userId 헤더 없이 호출되므로 Blog 전용 경로에만 적용한다.
+    bean.addUrlPatterns(
+        "/internal/users/recommendation-profile", "/internal/users/bookmarks/lookup");
     bean.setOrder(-100);
     return bean;
   }
