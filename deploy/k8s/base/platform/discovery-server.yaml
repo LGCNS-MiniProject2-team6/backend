@@ -20,7 +20,7 @@ spec:
         workload: platform
       containers:
         - name: app
-          image: junwooqkr5302/recu-discoveryserver:b666914
+          image: junwooqkr5302/recu-discoveryserver:9075f1b
           ports:
             - name: http
               containerPort: 8761

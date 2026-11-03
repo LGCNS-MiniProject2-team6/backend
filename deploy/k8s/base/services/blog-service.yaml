@@ -20,7 +20,7 @@ spec:
         workload: service
       containers:
         - name: app
-          image: junwooqkr5302/recu-blogservice:b666914
+          image: junwooqkr5302/recu-blogservice:9075f1b
           ports:
             - name: http
               containerPort: 8084
@@ -49,6 +49,11 @@ spec:
                 secretKeyRef:
                   name: mariadb-secret
                   key: BLOG_DB_PASSWORD
+            - name: INTERNAL_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: internal-api-secrets
+                  key: INTERNAL_API_TOKEN
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
