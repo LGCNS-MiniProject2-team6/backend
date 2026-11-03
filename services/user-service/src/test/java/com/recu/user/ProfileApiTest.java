@@ -79,7 +79,7 @@ class ProfileApiTest {
     mockMvc
         .perform(
             post("/api/profile")
-                .header("X-User-Id", testUser.getUserId())
+                .header("userId", testUser.getUserId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
         .andExpect(status().isCreated())
@@ -91,7 +91,7 @@ class ProfileApiTest {
 
     // 2. 조회 (GET)
     mockMvc
-        .perform(get("/api/profile").header("X-User-Id", testUser.getUserId()))
+        .perform(get("/api/profile").header("userId", testUser.getUserId()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.careerYears").value(3))
         .andExpect(jsonPath("$.profileVersion").value(1));
@@ -108,7 +108,7 @@ class ProfileApiTest {
     mockMvc
         .perform(
             put("/api/profile")
-                .header("X-User-Id", testUser.getUserId())
+                .header("userId", testUser.getUserId())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(updateRequest)))
         .andExpect(status().isOk())

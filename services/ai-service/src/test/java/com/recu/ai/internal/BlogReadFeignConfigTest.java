@@ -24,8 +24,15 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @SpringBootTest(
     properties = {
-      "spring.profiles.active=standalone", "spring.cloud.config.enabled=false",
-      "spring.cloud.bus.enabled=false", "eureka.client.enabled=false",
+      "spring.profiles.active=standalone",
+      "spring.cloud.config.enabled=false",
+      "spring.cloud.bus.enabled=false",
+      "eureka.client.enabled=false",
+      "spring.datasource.driver-class-name=org.h2.Driver",
+      "spring.datasource.url=jdbc:h2:mem:feigncontract;MODE=MariaDB;DATABASE_TO_LOWER=TRUE;DB_CLOSE_DELAY=-1",
+      "spring.datasource.username=sa",
+      "spring.datasource.password=",
+      "gemini.api-key=test-only-dummy-key",
       "recu.internal.token=feign-contract-test-token"
     })
 @Import(BlogReadFeignConfigTest.Clients.class)
@@ -97,7 +104,7 @@ class BlogReadFeignConfigTest {
   @EnableFeignClients(clients = {BlogContractClient.class, OtherServiceClient.class})
   static class Clients {}
 
-  @FeignClient(name = "blog-service", url = "${test.blog.url}")
+  @FeignClient(name = "blog-service", contextId = "blogContractTestClient", url = "${test.blog.url}")
   interface BlogContractClient {
     @GetMapping("/internal/blog/{postId}")
     Map<String, Object> post(@PathVariable("postId") Long postId);
