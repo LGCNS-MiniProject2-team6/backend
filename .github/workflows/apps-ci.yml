@@ -80,7 +80,7 @@ jobs:
               "$MODULE"/*)
                 affected=true
                 ;;
-              build.gradle|settings.gradle|gradle.properties|gradlew|gradlew.bat|gradle/*|buildSrc/*|.github/workflows/apps-ci.yml)
+              build.gradle|settings.gradle|gradle.properties|gradlew|gradlew.bat|gradle/*|buildSrc/*|.github/workflows/apps-ci.yml|scripts/update-gitops-image.py)
                 affected=true
                 ;;
               platform/bus-support/*)
@@ -100,6 +100,9 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
+
+      - name: Test GitOps image updater
+        run: python3 scripts/test_update_gitops_image.py
 
       - name: Test and build JAR
         if: steps.changes.outputs.affected == 'true'
@@ -148,3 +151,47 @@ jobs:
           set -euo pipefail
           docker push "$IMAGE"
           echo "Published: $IMAGE" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Checkout GitOps
+        if: steps.changes.outputs.affected == 'true' && github.event_name == 'push'
+        uses: actions/checkout@v7
+        with:
+          repository: ${{ vars.GITOPS_REPOSITORY || 'LGCNS-MiniProject2-team6/recu-gitops' }}
+          ref: ${{ vars.GITOPS_BASE_BRANCH || 'main' }}
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+          persist-credentials: false
+
+      - name: Update dev image and record digest
+        if: steps.changes.outputs.affected == 'true' && github.event_name == 'push'
+        env:
+          SERVICE: ${{ matrix.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/update-gitops-image.py gitops "$SERVICE" "$IMAGE"
+          digest=$(docker buildx imagetools inspect "$IMAGE" --format '{{json .Manifest.Digest}}' | tr -d '"')
+          [[ "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]
+          {
+            echo '# 수정사항'
+            echo "- dev $SERVICE 이미지: $IMAGE"
+            echo "- Digest: $digest"
+            echo '# 메모'
+            echo "- Source: https://github.com/$GITHUB_REPOSITORY/commit/$GITHUB_SHA"
+            echo "- CI: https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo '- 역할 2 검토·병합 후 dev 배포 상태 확인 필요'
+            echo '- AI로 작성한 GitOps 태그 변경 자동화에서 생성'
+          } > "$RUNNER_TEMP/gitops-pr-${SERVICE}.md"
+
+      - name: Create or update dev image PR
+        if: steps.changes.outputs.affected == 'true' && github.event_name == 'push'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+          base: ${{ vars.GITOPS_BASE_BRANCH || 'main' }}
+          branch: codex/dev-image-${{ matrix.name }}-${{ github.sha }}
+          add-paths: overlays/dev-apps/images/${{ matrix.name }}.json
+          commit-message: 'chore(gitops): dev ${{ matrix.name }} 이미지 갱신'
+          title: 'chore(gitops): dev ${{ matrix.name }} 이미지 갱신'
+          body-path: ${{ runner.temp }}/gitops-pr-${{ matrix.name }}.md
