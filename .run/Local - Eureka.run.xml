@@ -1,9 +1,8 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Local - Eureka" type="Application" factoryName="Application">
-    <option name="ALTERNATIVE_JRE_PATH" value="17" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.recu.platform.discovery.DiscoveryServerApplication" />
-    <module name="backend_develop" />
+    <module name="backend.platform.discovery-server.main" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>
