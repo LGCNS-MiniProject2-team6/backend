@@ -1,5 +1,9 @@
 package com.recu.user.service;
 
+import com.recu.user.client.BlogServiceClient;
+import com.recu.user.common.exception.BusinessException;
+import com.recu.user.common.exception.ErrorCode;
+import com.recu.user.domain.dto.NotificationPageResponse;
 import com.recu.user.domain.entity.NotificationEntity;
 import com.recu.user.domain.entity.UserEntity;
 import com.recu.user.domain.entity.UserJobFieldEntity;
@@ -10,12 +14,17 @@ import com.recu.user.repository.NotificationRepository;
 import com.recu.user.repository.UserJobFieldRepository;
 import com.recu.user.repository.UserRepository;
 import com.recu.user.repository.UserSkillRepository;
+import feign.FeignException;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +37,66 @@ public class NotificationService {
   private final UserJobFieldRepository userJobFieldRepository;
   private final UserSkillRepository userSkillRepository;
   private final NotificationRepository notificationRepository;
+
+  private final BlogServiceClient blogServiceClient;
+
+  @Transactional(readOnly = true)
+  public NotificationPageResponse list(Long userId, int page, int size) {
+    var rows =
+        notificationRepository.findByUser_UserId(
+            userId,
+            PageRequest.of(
+                page, size, Sort.by(Sort.Direction.DESC, "createdAt", "notificationId")));
+    var companyIds = findCompanyIds(rows.getContent());
+    var items =
+        rows.getContent().stream()
+            .map(
+                row ->
+                    new NotificationPageResponse.Item(
+                        row.getNotificationId(),
+                        row.getTitle(),
+                        "새 블로그 글이 등록됐어요.",
+                        row.getCreatedAt(),
+                        Boolean.TRUE.equals(row.getIsRead()),
+                        row.getBlogPostId(),
+                        companyIds.get(row.getBlogPostId()),
+                        row.getUrl()))
+            .toList();
+    return new NotificationPageResponse(
+        items,
+        page,
+        size,
+        rows.getTotalElements(),
+        rows.getTotalPages(),
+        notificationRepository.countByUser_UserIdAndIsReadFalse(userId));
+  }
+
+  @Transactional
+  public void markRead(Long userId, Long notificationId) {
+    var notification =
+        notificationRepository
+            .findByNotificationIdAndUser_UserId(notificationId, userId)
+            .orElseThrow(() -> new BusinessException(ErrorCode.NOT_FOUND));
+    notification.setIsRead(true);
+  }
+
+  private Map<Long, Long> findCompanyIds(List<NotificationEntity> rows) {
+    var postIds = rows.stream().map(NotificationEntity::getBlogPostId).distinct().toList();
+    Map<Long, Long> companyIds = new HashMap<>();
+    if (!postIds.isEmpty()) {
+      try {
+        var response = blogServiceClient.lookupPosts(new BlogServiceClient.PostIdsRequest(postIds));
+        if (response != null && response.posts() != null) {
+          for (var post : response.posts()) {
+            companyIds.put(post.postId(), post.companyId());
+          }
+        }
+      } catch (FeignException exception) {
+        log.warn("알림의 게시글 이동 정보 조회 실패: status={}", exception.status());
+      }
+    }
+    return companyIds;
+  }
 
   @Transactional
   public void processBlogPostCreated(EventEnvelope<BlogPostCreatedData> event) {

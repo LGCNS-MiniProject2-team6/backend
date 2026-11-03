@@ -55,7 +55,14 @@ spring:
           order: 10
           uri: lb://user-service
           predicates:
-            - Path=/api/profile/**,/api/bookmarks/**,/api/notifications,/api/notifications/**
+            - Path=/api/profile/**,/api/bookmarks/**
+        - id: user-notifications
+          uri: lb://user-service
+          predicates:
+            - Path=/api/notifications,/api/notifications/**
+          filters:
+            - JwtValidation
+            - JwtUserId
         - id: ai-service
           order: -10
           uri: lb://ai-service
