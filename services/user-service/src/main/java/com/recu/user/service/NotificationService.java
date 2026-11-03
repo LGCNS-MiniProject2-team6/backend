@@ -34,8 +34,8 @@ public class NotificationService {
     String eventId = event.eventId();
     BlogPostCreatedData data = event.data();
     if (data == null || data.postId() == null) {
-      log.warn("BlogPostCreatedData 또는 postId가 null입니다. eventId: {}", eventId);
-      return;
+      throw new IllegalArgumentException(
+          "BlogPostCreatedData 또는 postId가 null입니다. eventId: " + eventId);
     }
 
     Long postId = data.postId();

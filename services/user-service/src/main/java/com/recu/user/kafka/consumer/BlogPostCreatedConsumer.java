@@ -47,6 +47,9 @@ public class BlogPostCreatedConsumer {
       if (envelope == null || envelope.eventId() == null) {
         throw new IllegalArgumentException("유효하지 않은 이벤트 포맷입니다 (eventId 누락)");
       }
+      if (envelope.data() == null || envelope.data().postId() == null) {
+        throw new IllegalArgumentException("유효하지 않은 이벤트 포맷입니다 (data 또는 postId 누락)");
+      }
 
       notificationService.processBlogPostCreated(envelope);
     } catch (IllegalArgumentException e) {
