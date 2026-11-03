@@ -25,7 +25,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 public class SecurityConfig {
   @Bean
   SecurityFilterChain blogSecurity(
-      HttpSecurity http, ObjectMapper mapper, @Value("${recu.internal.token:}") String token)
+      HttpSecurity http,
+      ObjectMapper mapper,
+      @Value("${recu.internal.token:}") String token,
+      @Value("${BLOG_COLLECT_API_KEY:}") String collectKey)
       throws Exception {
     return http.csrf(csrf -> csrf.disable())
         .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
@@ -47,6 +50,8 @@ public class SecurityConfig {
                         "/v3/api-docs/**",
                         "/error")
                     .permitAll()
+                    .requestMatchers("/api/admin/collect/**")
+                    .hasRole("COLLECTOR")
                     .requestMatchers("/internal/**")
                     .hasRole("SERVICE")
                     .requestMatchers(HttpMethod.GET, "/api/tech-tags", "/api/companies/{id}")
@@ -61,7 +66,23 @@ public class SecurityConfig {
               protected void doFilterInternal(
                   HttpServletRequest req, HttpServletResponse res, FilterChain chain)
                   throws ServletException, IOException {
-                if (req.getRequestURI().startsWith("/internal/")) {
+                if (req.getRequestURI().startsWith("/api/admin/collect/")) {
+                  String supplied = req.getHeader("X-Collect-Key");
+                  if (collectKey.isBlank()
+                      || supplied == null
+                      || !MessageDigest.isEqual(
+                          collectKey.getBytes(StandardCharsets.UTF_8),
+                          supplied.getBytes(StandardCharsets.UTF_8))) {
+                    error(mapper, res, 401, "UNAUTHORIZED", "수집 API 인증이 필요합니다.");
+                    return;
+                  }
+                  SecurityContextHolder.getContext()
+                      .setAuthentication(
+                          new UsernamePasswordAuthenticationToken(
+                              "collector",
+                              null,
+                              List.of(new SimpleGrantedAuthority("ROLE_COLLECTOR"))));
+                } else if (req.getRequestURI().startsWith("/internal/")) {
                   String supplied = req.getHeader("X-Internal-Token");
                   if (token.isBlank()
                       || supplied == null
