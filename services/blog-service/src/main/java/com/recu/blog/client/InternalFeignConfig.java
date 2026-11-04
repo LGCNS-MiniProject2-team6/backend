@@ -13,7 +13,7 @@ import org.springframework.context.annotation.Bean;
 /** Explicit short timeouts and no automatic retry; never turn an outage into a false bookmark. */
 public class InternalFeignConfig {
   @Bean
-  RequestInterceptor internalToken(@Value("${recu.internal.token:}") String token) {
+  RequestInterceptor internalToken(@Value("${recu.internal.token:${INTERNAL_API_TOKEN:}}") String token) {
     return template -> {
       if (token.isBlank()) throw new BusinessException(ErrorCode.UPSTREAM_UNAVAILABLE);
       template.header("X-Internal-Token", token);
