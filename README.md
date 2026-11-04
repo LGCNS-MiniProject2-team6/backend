@@ -196,17 +196,17 @@ develop 대상 PR → 변경 앱 테스트·JAR·Docker 빌드
 
 | 작업 영역 | 담당자 | 이번 MSA 전환 기여 |
 | --- | --- | --- |
-| Backend — User 서비스 | [@woomoo3](https://github.com/woomoo3) | 인증·프로필·북마크 분리, Kafka 관심 알림 Consumer·중복 처리·DLT |
-| Backend — 알림 API | [@yhi9839](https://github.com/yhi9839) | 사용자 알림 목록 조회·읽음 처리 API |
-| Backend — AI 서비스 | [@pdpdpdjjj23](https://github.com/pdpdpdjjj23) | 프로필·본문 내부 API 조합, Gemini 가이드·캐시·검증, 내부 API 보안 |
-| Backend — Blog 서비스 | [@Kimoojin](https://github.com/Kimoojin) | Blog 분리·데이터 소유권, 내부 조회 연동, 수집→저장→완료 이벤트, 북마크 배치 개선·테스트 |
-| Gateway 인증 연동 | [@pdpdpdjjj23](https://github.com/pdpdpdjjj23) | JWT 검증·사용자 ID 전달 필터·서비스 인증 연결 |
-| DevOps 역할1 | [@yhi9839](https://github.com/yhi9839) | Discovery·Config·Gateway 라우팅·CORS·Bus 플랫폼 및 연결 검증 |
-| DevOps 역할2 | [@Unpart](https://github.com/Unpart) | K3s 환경·노드 배치·Secret·앱 배포, Argo CD·GitOps 동기화·롤백, 외부 HTTPS 공개 |
-| DevOps 역할3 | [@HYH0804](https://github.com/HYH0804) | MariaDB DB·계정 분리와 초기화 이미지, Kafka·토픽·DLT 도구, Prometheus·Grafana 구성 |
-| DevOps 역할4 | [@junwoo-qkr](https://github.com/junwoo-qkr) | 앱·DB 이미지 빌드/업로드 CI, 변경 영향 감지, GitOps 이미지 PR 자동화·배포 인계 |
-| Frontend 화면·알림 | [@yhi9839](https://github.com/yhi9839) | 기존 화면의 MSA 연동·반응형 개선, 알림함·읽음 처리·게시글 이동 |
-| Frontend 이미지·배포 연결 | [@HYH0804](https://github.com/HYH0804) | 정적 이미지·nginx·GHCR CI, dev frontend·시연 수집기 배포 연결 |
+| Backend — User 서비스 | [한예림(@woomoo3)](https://github.com/woomoo3) | 인증·프로필·북마크 분리, Kafka 관심 알림 Consumer·중복 처리·DLT |
+| Backend — 알림 API | [윤현일(@yhi9839)](https://github.com/yhi9839) | 사용자 알림 목록 조회·읽음 처리 API |
+| Backend — AI 서비스 | [박재후(@pdpdpdjjj23)](https://github.com/pdpdpdjjj23) | 프로필·본문 내부 API 조합, Gemini 가이드·캐시·검증, 내부 API 보안 |
+| Backend — Blog 서비스 | [김우진(@Kimoojin)](https://github.com/Kimoojin) | Blog 분리·데이터 소유권, 내부 조회 연동, 수집→저장→완료 이벤트, 북마크 배치 개선·테스트 |
+| Gateway 인증 연동 | [박재후(@pdpdpdjjj23)](https://github.com/pdpdpdjjj23) | JWT 검증·사용자 ID 전달 필터·서비스 인증 연결 |
+| MSA 플랫폼 | [윤현일(@yhi9839)](https://github.com/yhi9839) | Discovery·Config·Gateway 라우팅·CORS·Bus 플랫폼 및 연결 검증 |
+| K3s·GitOps 배포 | [문한일(@Unpart)](https://github.com/Unpart) | K3s 환경·노드 배치·Secret·앱 배포, Argo CD·GitOps 동기화·롤백, 외부 HTTPS 공개 |
+| DB·Kafka·모니터링 | [현준혁(@HYH0804)](https://github.com/HYH0804) | MariaDB DB·계정 분리와 초기화 이미지, Kafka·토픽·DLT 도구, Prometheus·Grafana 구성 |
+| CI/CD·이미지 자동화 | [박준우(@junwoo-qkr)](https://github.com/junwoo-qkr) | 앱·DB 이미지 빌드/업로드 CI, 변경 영향 감지, GitOps 이미지 PR 자동화·배포 인계 |
+| Frontend 화면·알림 | [윤현일(@yhi9839)](https://github.com/yhi9839) | 기존 화면의 MSA 연동·반응형 개선, 알림함·읽음 처리·게시글 이동 |
+| Frontend 이미지·배포 연결 | [현준혁(@HYH0804)](https://github.com/HYH0804) | 정적 이미지·nginx·GHCR CI, dev frontend·시연 수집기 배포 연결 |
 
 담당 계정은 이번 MSA 전환의 병합 PR·커밋 이력 기준입니다. 역할은 작업 영역 기준이며 팀원 한 명이 여러 영역에 참여할 수 있습니다. 원래 모놀리스의 기능 개발과 이번 분리·연동 기여를 구분합니다.
 
